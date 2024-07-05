@@ -3,704 +3,279 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quantum Algorithms</title>
+    <title>Quantum Realm Explorer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            background: linear-gradient(135deg, #2b2d42, #8d99ae);
+        :root {
+            --bg-color: #030303;
+            --text-color: #e0e0e0;
+            --neon-blue: #00f3ff;
+            --neon-purple: #9d00ff;
+            --neon-green: #00ff9d;
+        }
+
+        * {
             margin: 0;
             padding: 0;
-            height: 100vh;
-            width: 100vw;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: #edf2f4;
-            animation: fadeIn 2s ease-in;
+            box-sizing: border-box;
         }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        .container {
-            background-color: #1e1d1d;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-            text-align: center;
-            width: 100%;
-            height: 100%;
-            max-width: 100%;
-            max-height: 100%;
-            transition: transform 0.3s, box-shadow 0.3s;
-            animation: slideIn 1s ease-out;
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            overflow-x: hidden;
         }
-        
-        @keyframes slideIn {
-            from { transform: translateY(-100px); }
-            to { transform: translateY(0); }
-        }
-        
-        .container:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-        }
-        
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            animation: glow 1.5s infinite alternate;
-        }
-        
-        @keyframes glow {
-            from { text-shadow: 2px 2px 10px #ef233c; }
-            to { text-shadow: 2px 2px 20px #ef233c; }
-        }
-        
-        label, select {
-            margin: 10px;
-            font-size: 1.2rem;
-            display: inline-block;
-            transition: color 0.3s;
-        }
-        
-        select {
-            padding: 10px;
-            border-radius: 5px;
-            border: 2px solid #8d99ae;
-            background-color: #edf2f4;
-            color: #2b2d42;
-            cursor: pointer;
-            transition: border-color 0.3s;
-        }
-        
-        select:hover {
-            border-color: #2b2d42;
-        }
-        
-        #algorithm-description {
-            margin: 20px 0;
-            font-size: 1rem;
-            text-align: left;
-            background-color: #8d99ae;
-            padding: 15px;
-            border-radius: 10px;
-            color: #2b2d42;
-            transition: background-color 0.3s, color 0.3s;
-            animation: fadeInUp 1s ease-out;
-        }
-        
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        #algorithm-description:hover {
-            background-color: #2b2d42;
-            color: #edf2f4;
-        }
-        
-        #quantum-circuit {
-            margin: 20px 0;
-            border: 2px solid #8d99ae;
-            padding: 15px;
-            background-color: #edf2f4;
-            text-align: left;
-            white-space: pre;
-            font-family: 'Courier New', monospace;
-            color: #2b2d42;
-            border-radius: 10px;
-            transition: border-color 0.3s, background-color 0.3s;
-            animation: fadeInRight 1s ease-out;
-        }
-        
-        @keyframes fadeInRight {
-            from { opacity: 0; transform: translateX(-20px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        
-        #quantum-circuit:hover {
-            border-color: #2b2d42;
-            background-color: #d90429;
-            color: #edf2f4;
-        }
-        
-        button {
-            padding: 12px 25px;
-            font-size: 1.2rem;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            background-color: #d90429;
-            color: #edf2f4;
-            transition: background-color 0.3s, transform 0.3s;
-            animation: pulse 1.5s infinite;
-        }
-        
-        @keyframes pulse {
-            from { transform: scale(1); }
-            to { transform: scale(1.05); }
-        }
-        
-        button:hover {
-            background-color: #ef233c;
-            transform: scale(1.1);
-        }
-        
-        button:active {
-            background-color: #ba1b1d;
-        }
-        
-        #result {
-            margin-top: 20px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #d90429;
-            background-color: #8d99ae;
-            padding: 15px;
-            border-radius: 10px;
-            transition: background-color 0.3s, color 0.3s;
-            animation: fadeInLeft 1s ease-out;
-        }
-        
-        @keyframes fadeInLeft {
-            from { opacity: 0; transform: translateX(20px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        
-        #result:hover {
-            background-color: #2b2d42;
-            color: #edf2f4;
-        }
-        
-        @media (max-width: 768px) {
-            .container {
-                width: 100%;
-                height: 100%;
-                border-radius: 0;
-            }
-        
-            h1 {
-                font-size: 2rem;
-            }
-        }
-        
-        /* Additional Effects */
-        
-        /* Glow Effect */
-        button {
-            box-shadow: 0 0 20px rgba(217, 4, 41, 0.6);
-        }
-        
-        button:hover {
-            box-shadow: 0 0 30px rgba(239, 35, 60, 0.8);
-        }
-        
-        /* Container Slide Up */
-        @keyframes slideUp {
-            from { transform: translateY(50px); }
-            to { transform: translateY(0); }
-        }
-        
+
         .container {
-            animation: slideUp 0.5s ease-out;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
         }
-        
-        /* Shake Effect on Result Hover */
-        #result:hover {
-            animation: shake 0.5s;
+
+        header {
+            background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple));
+            padding: 2rem 0;
+            text-align: center;
+            font-family: 'Orbitron', sans-serif;
+            position: relative;
+            overflow: hidden;
         }
-        
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            50% { transform: translateX(5px); }
-            75% { transform: translateX(-5px); }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 25%),
+                radial-gradient(circle at 80% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 25%);
+            z-index: 1;
         }
-        
-        /* Bouncing Select Options */
-        select {
-            animation: bounce 2s infinite;
+
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-purple);
         }
-        
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+
+        .quantum-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
         }
-        
-        /* Highlight Effect for Description */
-        #algorithm-description:hover {
-            animation: highlight 0.5s ease-in-out;
+
+        .quantum-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
-        @keyframes highlight {
-            0%, 100% { background-color: #2b2d42; color: #edf2f4; }
-            50% { background-color: #edf2f4; color: #2b2d42; }
+
+        .quantum-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 10px 20px rgba(0, 243, 255, 0.1);
         }
-        
-        /* Fade-in Effect for Quantum Circuit */
+
+        select, button {
+            width: 100%;
+            padding: 1rem;
+            margin-top: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--neon-blue);
+            color: var(--text-color);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        select:hover, button:hover {
+            background: var(--neon-blue);
+            color: var(--bg-color);
+        }
+
+        #algorithm-description, #quantum-circuit, #result {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            font-family: 'Roboto', sans-serif;
+        }
+
         #quantum-circuit {
-            animation: fadeIn 2s ease-in-out;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            color: var(--neon-green);
         }
-        
-        /* Glowing Text in Result */
-        @keyframes glowText {
-            from { text-shadow: 0 0 10px #d90429; }
-            to { text-shadow: 0 0 20px #d90429; }
+
+        .glow-text {
+            text-shadow: 0 0 5px var(--neon-blue), 0 0 10px var(--neon-purple);
         }
-        
-        #result {
-            animation: glowText 1.5s infinite alternate;
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
         }
-        
-        /* Rotate Effect on Button Hover */
-        button:hover {
-            transform: scale(1.1) rotate(3deg);
+
+        .floating {
+            animation: float 6s ease-in-out infinite;
         }
-        
-        /* Gradient Background for Select Options */
-        select {
-            background: linear-gradient(135deg, #edf2f4, #2b2d42);
+
+        .particle {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background: var(--neon-blue);
+            border-radius: 50%;
+            pointer-events: none;
         }
-        
-        /* Expand Effect on Container Hover */
-        .container:hover {
-            transform: translateY(-10px) scale(1.05);
+
+        @media (max-width: 768px) {
+            .quantum-grid {
+                grid-template-columns: 1fr;
+            }
         }
-        
-        /* Pulse Effect on Quantum Circuit */
-        @keyframes pulseCircuit {
-            from { box-shadow: 0 0 10px rgba(217, 4, 41, 0.6); }
-            to { box-shadow: 0 0 20px rgba(239, 35, 60, 0.8); }
-        }
-        
-        #quantum-circuit {
-            animation: pulseCircuit 1.5s infinite;
-        }
-        
     </style>
 </head>
 <body>
+    <header>
+        <h1 class="glow-text">Quantum Realm Explorer</h1>
+        <p>Unveiling the Mysteries of Quantum Algorithms</p>
+    </header>
+
     <div class="container">
-        <h1>Quantum Algorithm Simulator</h1>
-        <label for="algorithm-select">Choose an algorithm:</label>
-        <select id="algorithm-select">
-            <option value="grover">Grover's Algorithm</option>
-            <option value="shor">Shor's Algorithm</option>
-            <option value="dj">Deutsch-Jozsa Algorithm</option>
-            <option value="bv">Bernstein-Vazirani Algorithm</option>
-            <option value="qft">Quantum Fourier Transform</option>
-            <option value="qpe">Quantum Phase Estimation</option>
-            <option value="hhl">HHL Algorithm</option>
-            <option value="qkd">Quantum Key Distribution</option>
-            <option value="qwalk">Quantum Walk</option>
-            <option value="qsvt">Quantum Singular Value Transformation</option>
-            <option value="qae">Quantum Amplitude Estimation</option>
-            <option value="qml">Quantum Machine Learning</option>
-            <option value="vqe">Variational Quantum Eigensolver</option>
-            <option value="qaoa">Quantum Approximate Optimization Algorithm</option>
-            <option value="qnn">Quantum Neural Networks</option>
-            <option value="qsm">Quantum State Tomography</option>
-            <option value="qswitch">Quantum Switch</option>
-            <option value="qcir">Quantum Circuit Learning</option>
-            <option value="qsamp">Quantum Sampling</option>
-            <option value="qsimp">Quantum Simulated Annealing</option>
-            <option value="qgrad">Quantum Gradient Descent</option>
-            <option value="qsolv">Quantum Solvers for Differential Equations</option>
-            <!-- Add more algorithms as needed -->
-        </select>
-        <div id="algorithm-description">Description will be displayed here.</div>
-        <div id="quantum-circuit">Quantum circuit will be displayed here.</div>
-        <button id="run-algorithm">Run Algorithm</button>
-        <div id="result">Result will be displayed here.</div>
+        <div class="quantum-grid">
+            <div class="quantum-card floating">
+                <h2 class="glow-text">Select Algorithm</h2>
+                <select id="algorithm-select">
+                    <option value="grover">Grover's Algorithm</option>
+                    <option value="shor">Shor's Algorithm</option>
+                    <option value="qft">Quantum Fourier Transform</option>
+                    <option value="vqe">Variational Quantum Eigensolver</option>
+                    <option value="qaoa">Quantum Approximate Optimization Algorithm</option>
+                </select>
+            </div>
+
+            <div class="quantum-card">
+                <h2 class="glow-text">Algorithm Description</h2>
+                <div id="algorithm-description"></div>
+            </div>
+
+            <div class="quantum-card">
+                <h2 class="glow-text">Quantum Circuit</h2>
+                <div id="quantum-circuit"></div>
+            </div>
+
+            <div class="quantum-card floating">
+                <button id="run-algorithm">Initialize Quantum Simulation</button>
+                <div id="result"></div>
+            </div>
+        </div>
     </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const algorithmDescriptions = {
-                'grover': 'Grover\'s algorithm is a quantum search algorithm that finds a target element in an unsorted database with quadratic speedup over classical algorithms.',
-                'shor': 'Shor\'s algorithm is a quantum algorithm for integer factorization, which underpins the security of many cryptographic systems. It can efficiently factorize large integers and break RSA encryption.',
-                'dj': 'The Deutsch-Jozsa algorithm is a quantum algorithm that solves the Deutsch problem with a single query, demonstrating quantum parallelism.',
-                'bv': 'The Bernstein-Vazirani algorithm determines a hidden string with a single query, showcasing the efficiency of quantum algorithms over classical counterparts.',
-                'qft': 'Quantum Fourier Transform (QFT) is the quantum analogue of the discrete Fourier transform and is a key component in many quantum algorithms.',
-                'qpe': 'Quantum Phase Estimation (QPE) algorithm estimates the phase (or eigenvalue) of an eigenvector of a unitary operator, fundamental in quantum algorithms like Shor\'s.',
-                'hhl': 'Harrow-Hassidim-Lloyd (HHL) algorithm solves linear systems of equations exponentially faster than classical algorithms under certain conditions.',
-                'qkd': 'Quantum Key Distribution (QKD) uses quantum mechanics to securely distribute cryptographic keys, guaranteeing security based on physical laws.',
-                'qwalk': 'Quantum Walks are quantum analogues of classical random walks, used in search algorithms and studying quantum system dynamics.',
-                'qsvt': 'Quantum Singular Value Transformation (QSVT) provides a way to implement any polynomial transformation of the singular values of a matrix.',
-                'qae': 'Quantum Amplitude Estimation (QAE) improves the precision of probability estimations in quantum algorithms, essential for applications like quantum finance.',
-                'qml': 'Quantum Machine Learning (QML) applies quantum computing to machine learning, offering potential speedups for various learning tasks.',
-                'vqe': 'Variational Quantum Eigensolver (VQE) is a hybrid quantum-classical algorithm for finding the ground state energy of a quantum system.',
-                'qaoa': 'Quantum Approximate Optimization Algorithm (QAOA) approximates solutions to combinatorial optimization problems using quantum mechanics.',
-                'qnn': 'Quantum Neural Networks (QNN) integrate quantum computing with neural networks, aiming to enhance machine learning capabilities.',
-                'qsm': 'Quantum State Tomography reconstructs the state of a quantum system from measurement data, crucial for verifying quantum devices.',
-                'qswitch': 'Quantum Switch allows for superpositions of different causal orders, offering new computational and communication capabilities.',
-                'qcir': 'Quantum Circuit Learning utilizes quantum circuits to model and learn from data, potentially outperforming classical models.',
-                'qsamp': 'Quantum Sampling algorithms leverage quantum mechanics to sample from complex probability distributions more efficiently than classical algorithms.',
-                'qsimp': 'Quantum Simulated Annealing finds global minima of functions by simulating quantum tunneling, providing speedups over classical simulated annealing.',
-                'qgrad': 'Quantum Gradient Descent leverages quantum computing to perform gradient-based optimization, promising speedups for machine learning and optimization tasks.',
-                'qsolv': 'Quantum Solvers for Differential Equations solve differential equations using quantum computers, applicable in fields like quantum chemistry and physics.'
-                // Add more algorithm descriptions as needed
+                'grover': 'Grovers algorithm provides a quadratic speedup for searching an unsorted database, demonstrating quantum supremacy in search operations.',
+                'shor': 'Shors algorithm exponentially outperforms classical factoring algorithms, posing a significant threat to RSA encryption.',
+                'qft': 'The Quantum Fourier Transform is a linear transformation on qubits and is the quantum analogue of the discrete Fourier transform.',
+                'vqe': 'The Variational Quantum Eigensolver is a hybrid quantum-classical algorithm used for finding eigenvalues of a matrix, particularly in quantum chemistry.',
+                'qaoa': 'The Quantum Approximate Optimization Algorithm is designed to run on near-term quantum devices for solving combinatorial optimization problems.'
             };
-        
+
             const algorithmSelect = document.getElementById('algorithm-select');
             const descriptionDiv = document.getElementById('algorithm-description');
             const resultDiv = document.getElementById('result');
             const circuitDiv = document.getElementById('quantum-circuit');
-        
-            algorithmSelect.addEventListener('change', () => {
+
+            algorithmSelect.addEventListener('change', updateAlgorithmInfo);
+
+            document.getElementById('run-algorithm').addEventListener('click', runAlgorithm);
+
+            function updateAlgorithmInfo() {
                 const selectedAlgorithm = algorithmSelect.value;
-                descriptionDiv.innerText = algorithmDescriptions[selectedAlgorithm] || 'Description not available.';
-            });
-        
-            document.getElementById('run-algorithm').addEventListener('click', () => {
+                descriptionDiv.innerHTML = `<p>${algorithmDescriptions[selectedAlgorithm] || 'Description not available.'}</p>`;
+                circuitDiv.innerHTML = 'Quantum circuit will be generated upon simulation.';
+                resultDiv.innerHTML = '';
+            }
+
+            function runAlgorithm() {
                 const algorithm = algorithmSelect.value;
-                resultDiv.innerText = 'Running...';
-                circuitDiv.innerText = '';
-        
-                let result;
-                let circuit;
-        
-                try {
-                    if (algorithm === 'grover') {
-                        [result, circuit] = runGroverAlgorithm();
-                    } else if (algorithm === 'shor') {
-                        [result, circuit] = runShorAlgorithm();
-                    } else if (algorithm === 'dj') {
-                        [result, circuit] = runDJAlgorithm();
-                    } else if (algorithm === 'bv') {
-                        [result, circuit] = runBVAlgorithm();
-                    } else if (algorithm === 'qft') {
-                        [result, circuit] = runQFTAlgorithm();
-                    } else if (algorithm === 'qpe') {
-                        [result, circuit] = runQPEAlgorithm();
-                    } else if (algorithm === 'hhl') {
-                        [result, circuit] = runHHLAlgorithm();
-                    } else if (algorithm === 'qkd') {
-                        [result, circuit] = runQKDAlgorithm();
-                    } else if (algorithm === 'qwalk') {
-                        [result, circuit] = runQWalkAlgorithm();
-                    } else if (algorithm === 'qsvt') {
-                        [result, circuit] = runQSVTAlgorithm();
-                    } else if (algorithm === 'qae') {
-                        [result, circuit] = runQAEAlgorithm();
-                    } else if (algorithm === 'qml') {
-                        [result, circuit] = runQMLAlgorithm();
-                    } else if (algorithm === 'vqe') {
-                        [result, circuit] = runVQEAlgorithm();
-                    } else if (algorithm === 'qaoa') {
-                        [result, circuit] = runQAOAAlgorithm();
-                    } else if (algorithm === 'qnn') {
-                        [result, circuit] = runQNNAlgorithm();
-                    } else if (algorithm === 'qsm') {
-                        [result, circuit] = runQSMAlgorithm();
-                    } else if (algorithm === 'qswitch') {
-                        [result, circuit] = runQSwitchAlgorithm();
-                    } else if (algorithm === 'qcir') {
-                        [result, circuit] = runQCIRAlgorithm();
-                    } else if (algorithm === 'qsamp') {
-                        [result, circuit] = runQSAMPAlgorithm();
-                    } else if (algorithm === 'qsimp') {
-                        [result, circuit] = runQSIMPAlgorithm();
-                    } else if (algorithm === 'qgrad') {
-                        [result, circuit] = runQGradAlgorithm();
-                    } else if (algorithm === 'qsolv') {
-                        [result, circuit] = runQSOLVAlgorithm();
-                    } else {
-                        throw new Error("Algorithm not implemented.");
+                resultDiv.innerHTML = '<p>Initializing quantum state...</p>';
+                circuitDiv.innerHTML = '';
+
+                setTimeout(() => {
+                    let result, circuit;
+                    try {
+                        [result, circuit] = simulateQuantumAlgorithm(algorithm);
+                        resultDiv.innerHTML = `<p>Simulation Result:</p><pre>${JSON.stringify(result, null, 2)}</pre>`;
+                        circuitDiv.innerHTML = `<pre>${circuit.join('\n')}</pre>`;
+                    } catch (error) {
+                        resultDiv.innerHTML = `<p>Error: ${error.message}</p>`;
                     }
-        
-                    resultDiv.innerText = `Result: ${JSON.stringify(result)}`;
-                    circuitDiv.innerText = circuit.join('\n');
-                } catch (error) {
-                    resultDiv.innerText = `Error: ${error.message}`;
-                }
-            });
-        
-            function runGroverAlgorithm() {
-                const circuit = [
-                    'H q[0]',
-                    'H q[1]',
-                    'CZ q[0], q[1]',
-                    'H q[0]',
-                    'H q[1]',
-                    'Measure q[0]',
-                    'Measure q[1]'
-                ];
-                const result = { '00': 512, '11': 512 }; // Simplified result
+                }, 1500);
+            }
+
+            function simulateQuantumAlgorithm(algorithm) {
+                // This is a simplified simulation
+                const circuit = generateQuantumCircuit(algorithm);
+                const result = generateQuantumResult(algorithm);
                 return [result, circuit];
             }
-        
-            function runShorAlgorithm() {
-                const circuit = [
-                    'H q[0]',
-                    'H q[1]',
-                    'H q[2]',
-                    'CX q[0], q[1]',
-                    'CX q[1], q[2]',
-                    'H q[0]',
-                    'H q[1]',
-                    'H q[2]',
-                    'Measure q[0]',
-                    'Measure q[1]',
-                    'Measure q[2]'
-                ];
-                const result = { '000': 341, '011': 341, '101': 341 }; // Simplified result
-                return [result, circuit];
+
+            function generateQuantumCircuit(algorithm) {
+                const circuits = {
+                    'grover': ['H all', 'CNOT q[0], q[1]', 'H q[0]', 'Measure all'],
+                    'shor': ['H q[0-4]', 'CPHASE q[0], q[5]', 'QFT q[0-4]', 'Measure q[0-4]'],
+                    'qft': ['H q[0]', 'CPHASE(π/2) q[0], q[1]', 'H q[1]', 'Measure all'],
+                    'vqe': ['Ry(θ) q[0]', 'CNOT q[0], q[1]', 'Measure q[1]'],
+                    'qaoa': ['H all', 'QAOA_layers', 'Measure all']
+                };
+                return circuits[algorithm] || ['Algorithm circuit not implemented'];
             }
-        
-            function runDJAlgorithm() {
-                const circuit = [
-                    'H q[0]',
-                    'H q[1]',
-                    'H q[2]',
-                    'Measure q[0]',
-                    'Measure q[1]',
-                    'Measure q[2]'
-                ];
-                const result = { '000': 500, '111': 500 }; // Simplified result
-                return [result, circuit];
+
+            function generateQuantumResult(algorithm) {
+                const results = {
+                    'grover': { '00': 0.02, '01': 0.02, '10': 0.02, '11': 0.94 },
+                    'shor': { 'factors': [3, 5], 'probability': 0.97 },
+                    'qft': { 'phase': 0.25, 'accuracy': 0.99 },
+                    'vqe': { 'ground_state_energy': -1.137, 'confidence': 0.95 },
+                    'qaoa': { 'optimal_solution': [1, 0, 1, 1, 0], 'approximation_ratio': 0.967 }
+                };
+                return results[algorithm] || { 'error': 'Result not implemented' };
             }
-        
-            function runBVAlgorithm() {
-                const circuit = [
-                    'H q[0]',
-                    'H q[1]',
-                    'H q[2]',
-                    'Measure q[0]',
-                    'Measure q[1]',
-                    'Measure q[2]'
-                ];
-                const result = { '101': 1000 }; // Simplified result
-                return [result, circuit];
+
+            // Initialize
+            updateAlgorithmInfo();
+
+            // Particle effect
+            function createParticle() {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                particle.style.left = Math.random() * window.innerWidth + 'px';
+                particle.style.top = Math.random() * window.innerHeight + 'px';
+                document.body.appendChild(particle);
+
+                setTimeout(() => {
+                    particle.remove();
+                }, 5000);
             }
-        
-            function runQFTAlgorithm() {
-                const circuit = [
-                    'H q[0]',
-                    'H q[1]',
-                    'H q[2]',
-                    'Measure q[0]',
-                    'Measure q[1]',
-                    'Measure q[2]'
-                ];
-                const result = { '000': 512, '111': 512 }; // Simplified result
-                return [result, circuit];
-            }
-        
-            function runQPEAlgorithm() {
-                const circuit = [
-                    'H q[0]',
-                    'H q[1]',
-                    'H q[2]',
-                    'CX q[0], q[1]',
-                    'CX q[1], q[2]',
-                    'Measure q[0]',
-                    'Measure q[1]',
-                    'Measure q[2]'
-                ];
-                const result = { '001': 600, '110': 400 }; // Simplified result
-                return [result, circuit];
-            }
-        
-            function runHHLAlgorithm() {
-                const circuit = [
-                    'H q[0]',
-                    'H q[1]',
-                    'H q[2]',
-                    'CX q[0], q[1]',
-                    'CX q[1], q[2]',
-                    'Measure q[0]',
-                    'Measure q[1]',
-                    'Measure q[2]'
-                ];
-                const result = { '010': 700, '101': 300 }; // Simplified result
-                return [result, circuit];
-            }
-        
-            function runQKDAlgorithm() {
-                const circuit = [
-                    'H q[0]',
-                    'H q[1]',
-                    'Measure q[0]',
-                    'Measure q[1]'
-                ];
-                const result = { '00': 512, '11': 512 }; // Simplified result
-                return [result, circuit];
-            }
-        
-            function runQWalkAlgorithm() {
-                const circuit = [
-                    'H q[0]',
-                    'H q[1]',
-                    'H q[2]',
-                    'Measure q[0]',
-                    'Measure q[1]',
-                    'Measure q[2]'
-                ];
-                const result = { '010': 800, '101': 200 }; // Simplified result
-                return [result, circuit];
-            }
-        
-            function runQSVTAlgorithm() {
-                const circuit = [
-                    'H q[0]',
-                    'H q[1]',
-                    'H q[2]',
-                    'Measure q[0]',
-                    'Measure q[1]',
-                    'Measure q[2]'
-                ];
-                const result = { '011': 900, '100': 100 }; // Simplified result
-                return [result, circuit];
-            }
-        
-            function runQAEAlgorithm() {
-                const circuit = [
-                    'H q[0]',
-                    'H q[1]',
-                    'H q[2]',
-                    'Measure q[0]',
-                    'Measure q[1]',
-                    'Measure q[2]'
-                ];
-                const result = { '001': 600, '110': 400 }; // Simplified result
-                return [result, circuit];
-            }
-        
-            function runQMLAlgorithm() {
-                const circuit = [
-                    'H q[0]',
-                    'H q[1]',
-                    'H q[2]',
-                    'Measure q[0]',
-                    'Measure q[1]',
-                    'Measure q[2]'
-                ];
-                const result = { '000': 700, '111': 300 }; // Simplified result
-                return [result, circuit];
-            }
-        
-            function runVQEAlgorithm() {
-                const circuit = [
-                    'H q[0]',
-                    'H q[1]',
-                    'Measure q[0]',
-                    'Measure q[1]'
-                ];
-                const result = { '01': 500, '10': 500 }; // Simplified result
-                return [result, circuit];
-            }
-        
-            function runQAOAAlgorithm() {
-                const circuit = [
-                    'H q[0]',
-                    'H q[1]',
-                    'Measure q[0]',
-                    'Measure q[1]'
-                ];
-                const result = { '00': 512, '11': 512 }; // Simplified result
-                return [result, circuit];
-            }
-        
-            function runQNNAlgorithm() {
-                const circuit = [
-                    'H q[0]',
-                    'H q[1]',
-                    'Measure q[0]',
-                    'Measure q[1]'
-                ];
-                const result = { '00': 512, '11': 512 }; // Simplified result
-                return [result, circuit];
-            }
-        
-            function runQSMAlgorithm() {
-                const circuit = [
-                    'H q[0]',
-                    'H q[1]',
-                    'Measure q[0]',
-                    'Measure q[1]'
-                ];
-                const result = { '01': 512, '10': 512 }; // Simplified result
-                return [result, circuit];
-            }
-        
-            function runQSwitchAlgorithm() {
-                const circuit = [
-                    'H q[0]',
-                    'H q[1]',
-                    'Measure q[0]',
-                    'Measure q[1]'
-                ];
-                const result = { '10': 512, '01': 512 }; // Simplified result
-                return [result, circuit];
-            }
-        
-            function runQCIRAlgorithm() {
-                const circuit = [
-                    'H q[0]',
-                    'H q[1]',
-                    'Measure q[0]',
-                    'Measure q[1]'
-                ];
-                const result = { '01': 512, '10': 512 }; // Simplified result
-                return [result, circuit];
-            }
-        
-            function runQSAMPAlgorithm() {
-                const circuit = [
-                    'H q[0]',
-                    'H q[1]',
-                    'Measure q[0]',
-                    'Measure q[1]'
-                ];
-                const result = { '10': 512, '01': 512 }; // Simplified result
-                return [result, circuit];
-            }
-        
-            function runQSIMPAlgorithm() {
-                const circuit = [
-                    'H q[0]',
-                    'H q[1]',
-                    'Measure q[0]',
-                    'Measure q[1]'
-                ];
-                const result = { '00': 512, '11': 512 }; // Simplified result
-                return [result, circuit];
-            }
-        
-            function runQGradAlgorithm() {
-                const circuit = [
-                    'H q[0]',
-                    'H q[1]',
-                    'Measure q[0]',
-                    'Measure q[1]'
-                ];
-                const result = { '11': 512, '00': 512 }; // Simplified result
-                return [result, circuit];
-            }
-        
-            function runQSOLVAlgorithm() {
-                const circuit = [
-                    'H q[0]',
-                    'H q[1]',
-                    'Measure q[0]',
-                    'Measure q[1]'
-                ];
-                const result = { '10': 512, '01': 512 }; // Simplified result
-                return [result, circuit];
-            }
-        
-            // Trigger initial description load
-            algorithmSelect.dispatchEvent(new Event('change'));
+
+            setInterval(createParticle, 200);
         });
-        
     </script>
 </body>
 </html>
