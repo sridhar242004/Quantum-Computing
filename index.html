@@ -1,281 +1,1975 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quantum Realm Explorer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-color: #030303;
-            --text-color: #e0e0e0;
-            --neon-blue: #00f3ff;
-            --neon-purple: #9d00ff;
-            --neon-green: #00ff9d;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quantum Realm Explorer — Quantum Algorithm Simulation Platform</title>
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
-        }
+<!-- Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
+<!-- Spline Viewer -->
+<script type="module" src="https://unpkg.com/@splinetool/viewer@1.12.97/build/spline-viewer.js"></script>
 
-        header {
-            background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple));
-            padding: 2rem 0;
-            text-align: center;
-            font-family: 'Orbitron', sans-serif;
-            position: relative;
-            overflow: hidden;
-        }
+<!-- GSAP + Plugins -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.4/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.4/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.4/TextPlugin.min.js"></script>
 
-        header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
-                radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 25%),
-                radial-gradient(circle at 80% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 25%);
-            z-index: 1;
-        }
+<!-- Three.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-        h1 {
-            font-size: 3.5rem;
-            margin-bottom: 1rem;
-            position: relative;
-            z-index: 2;
-            text-shadow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-purple);
-        }
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-        .quantum-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 4rem;
-        }
+<style>
+/* ====================================================
+   DESIGN TOKENS — Warm Quantum Theme
+==================================================== */
+:root {
+  --void:          #0A0400;
+  --nebula:        #150800;
+  --nebula-light:  #241000;
+  --cyan:          #FF8C00;
+  --cyan-dim:      rgba(255,140,0,.15);
+  --violet:        #FF5E1F;
+  --violet-dim:    rgba(255,94,31,.15);
+  --emerald:       #FFB84D;
+  --emerald-dim:   rgba(255,184,77,.12);
+  --white:         #FFF8F0;
+  --muted:         rgba(255,248,240,.60);
+  --dim:           rgba(255,248,240,.10);
 
-        .quantum-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 2rem;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+  --f-display:    'Space Grotesk', sans-serif;
+  --f-body:       'Inter', sans-serif;
+  --f-mono:       'JetBrains Mono', monospace;
 
-        .quantum-card:hover {
-            transform: translateY(-10px) scale(1.02);
-            box-shadow: 0 10px 20px rgba(0, 243, 255, 0.1);
-        }
+  --r-sm:  10px;
+  --r-md:  16px;
+  --r-lg:  24px;
+  --r-xl:  32px;
 
-        select, button {
-            width: 100%;
-            padding: 1rem;
-            margin-top: 1rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--neon-blue);
-            color: var(--text-color);
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1rem;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+  --ease: cubic-bezier(.4,0,.2,1);
+  --tr:   .35s var(--ease);
+  --tr-slow: .8s var(--ease);
+}
 
-        select:hover, button:hover {
-            background: var(--neon-blue);
-            color: var(--bg-color);
-        }
+/* ====================================================
+   RESET
+==================================================== */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{
+  font-family:var(--f-body);
+  background:var(--void);
+  color:var(--white);
+  overflow-x:hidden;
+  line-height:1.6;
+}
+::selection{background:var(--cyan);color:var(--void)}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--void)}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--cyan),var(--violet));border-radius:2px}
 
-        #algorithm-description, #quantum-circuit, #result {
-            margin-top: 1rem;
-            padding: 1rem;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 5px;
-            font-family: 'Roboto', sans-serif;
-        }
+/* ====================================================
+   PRELOADER
+==================================================== */
+#preloader{
+  position:fixed;inset:0;
+  background:var(--void);
+  z-index:9999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2rem;
+}
+.pre-atom{
+  width:80px;height:80px;position:relative;
+  animation:pre-spin 2.5s linear infinite;
+}
+.pre-atom::before,.pre-atom::after{
+  content:'';position:absolute;inset:0;
+  border-radius:50%;
+  border:2.5px solid transparent;
+}
+.pre-atom::before{border-top-color:var(--cyan);border-right-color:var(--cyan);animation:pre-spin 1.6s linear infinite}
+.pre-atom::after{border-bottom-color:var(--violet);border-left-color:var(--violet);animation:pre-spin 1.2s linear infinite reverse}
+.pre-dot{
+  position:absolute;inset:50%;width:10px;height:10px;
+  margin:-5px;border-radius:50%;
+  background:var(--emerald);
+  box-shadow:0 0 16px var(--emerald);
+}
+@keyframes pre-spin{to{transform:rotate(360deg)}}
+.pre-title{
+  font-family:var(--f-display);font-size:1.4rem;font-weight:700;
+  letter-spacing:.25em;color:var(--cyan);text-transform:uppercase;
+}
+.pre-bar{
+  width:260px;height:3px;
+  background:rgba(255,140,0,.12);border-radius:2px;overflow:hidden;
+}
+.pre-fill{
+  height:100%;
+  background:linear-gradient(90deg,var(--cyan),var(--violet),var(--emerald));
+  border-radius:2px;
+  animation:pre-load 2.5s ease-out forwards;
+}
+@keyframes pre-load{from{width:0}to{width:100%}}
+.pre-text{
+  font-family:var(--f-mono);font-size:.75rem;color:var(--muted);
+  letter-spacing:.14em;min-height:1.2em;text-align:center;
+}
 
-        #quantum-circuit {
-            font-family: 'Courier New', monospace;
-            white-space: pre-wrap;
-            color: var(--neon-green);
-        }
+/* ====================================================
+   NAVBAR
+==================================================== */
+.qnav{
+  position:fixed;top:0;left:0;right:0;z-index:800;
+  padding:1.25rem 3rem;
+  display:flex;align-items:center;justify-content:space-between;
+  transition:var(--tr-slow);
+}
+.qnav.scrolled{
+  background:rgba(10,4,0,.92);
+  backdrop-filter:blur(24px) saturate(1.8);
+  border-bottom:1px solid rgba(255,140,0,.12);
+  padding:.9rem 3rem;
+}
+.nav-brand{
+  display:flex;align-items:center;gap:.75rem;text-decoration:none;
+  font-family:var(--f-display);font-weight:700;font-size:1.15rem;color:var(--white);
+}
+.brand-icon{
+  width:40px;height:40px;
+  background:linear-gradient(135deg,var(--cyan),var(--violet));
+  border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;
+  box-shadow:0 4px 20px rgba(255,140,0,.3);
+}
+.brand-span{color:var(--cyan)}
+.nav-links{
+  display:flex;align-items:center;gap:2.5rem;list-style:none;
+}
+.nav-links a{
+  font-size:.9rem;font-weight:500;color:var(--muted);text-decoration:none;
+  letter-spacing:.04em;transition:var(--tr);position:relative;
+}
+.nav-links a::after{
+  content:'';position:absolute;bottom:-5px;left:0;
+  width:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--violet));transition:var(--tr);border-radius:1px;
+}
+.nav-links a:hover{color:var(--cyan)}
+.nav-links a:hover::after{width:100%}
+.nav-cta{
+  padding:.55rem 1.5rem;
+  background:linear-gradient(135deg,var(--cyan),var(--violet));
+  border:none;border-radius:var(--r-sm);
+  font-family:var(--f-display);font-weight:600;font-size:.85rem;
+  color:var(--void);cursor:pointer;text-decoration:none;
+  transition:var(--tr);box-shadow:0 4px 20px rgba(255,140,0,.25);
+}
+.nav-cta:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(255,140,0,.4);color:var(--void)}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px;border:none;background:none}
+.hamburger span{width:24px;height:2px;background:var(--white);border-radius:1px;transition:var(--tr);display:block}
+.hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
 
-        .glow-text {
-            text-shadow: 0 0 5px var(--neon-blue), 0 0 10px var(--neon-purple);
-        }
+.mobile-drawer{
+  position:fixed;top:0;right:-100%;width:300px;height:100vh;
+  background:rgba(21,8,0,.98);backdrop-filter:blur(30px);
+  z-index:799;
+  border-left:1px solid rgba(255,140,0,.15);
+  padding:6rem 2rem 2rem;
+  display:flex;flex-direction:column;gap:1.5rem;
+  transition:.5s var(--ease);
+}
+.mobile-drawer.open{right:0}
+.mobile-drawer a{
+  font-family:var(--f-display);font-size:1.1rem;font-weight:500;
+  color:var(--muted);text-decoration:none;transition:var(--tr);
+  padding:.7rem 0;border-bottom:1px solid rgba(255,255,255,.06);
+}
+.mobile-drawer a:hover{color:var(--cyan);padding-left:.5rem}
 
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-            100% { transform: translateY(0px); }
-        }
+/* ====================================================
+   HERO — Spline 3D Model Integrated
+==================================================== */
+#hero{
+  position:relative;min-height:100vh;
+  display:flex;align-items:center;
+  overflow:hidden;
+  background:var(--void);
+}
 
-        .floating {
-            animation: float 6s ease-in-out infinite;
-        }
+/* Spline 3D Model Container — Full background */
+.hero-spline-bg{
+  position:absolute;
+  top:0;left:0;
+  width:100%;height:100%;
+  z-index:1;
+}
+.hero-spline-bg spline-viewer{
+  width:100%;height:100%;
+  display:block;
+}
 
-        .particle {
-            position: absolute;
-            width: 5px;
-            height: 5px;
-            background: var(--neon-blue);
-            border-radius: 50%;
-            pointer-events: none;
-        }
+/* Dark overlay gradient for text readability */
+.hero-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(105deg,rgba(10,4,0,.95) 0%,rgba(10,4,0,.80) 35%,rgba(10,4,0,.40) 60%,rgba(10,4,0,.15) 100%);
+  z-index:2;
+  pointer-events:none;
+}
 
-        @media (max-width: 768px) {
-            .quantum-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+/* Particle canvas on top */
+#three-canvas{
+  position:absolute;inset:0;pointer-events:none;z-index:3;
+}
+
+/* Grid lines */
+.hero-grid-bg{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(255,140,0,.02) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,140,0,.02) 1px,transparent 1px);
+  background-size:80px 80px;
+  pointer-events:none;z-index:3;
+}
+
+/* Ambient glow orbs */
+.hero-radial{
+  position:absolute;pointer-events:none;border-radius:50%;filter:blur(120px);z-index:3;
+}
+.hr1{width:600px;height:600px;background:rgba(255,140,0,.06);top:-200px;right:-100px}
+.hr2{width:400px;height:400px;background:rgba(255,94,31,.08);bottom:-150px;left:-80px}
+
+/* Hero content */
+.hero-inner{
+  position:relative;z-index:4;
+  max-width:1300px;margin:0 auto;
+  padding:7rem 3rem 4rem;
+  display:grid;
+  grid-template-columns:1.1fr 1fr;
+  align-items:center;gap:3rem;
+  width:100%;
+}
+.hero-content{max-width:640px}
+
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:.6rem;
+  padding:.4rem 1.2rem;
+  background:rgba(255,140,0,.08);
+  border:1px solid rgba(255,140,0,.30);
+  border-radius:100px;
+  font-family:var(--f-mono);font-size:.75rem;font-weight:500;
+  color:var(--cyan);letter-spacing:.14em;text-transform:uppercase;
+  margin-bottom:1.75rem;
+  backdrop-filter:blur(10px);
+}
+.eyebrow-dot{
+  width:7px;height:7px;background:var(--emerald);border-radius:50%;
+  box-shadow:0 0 10px var(--emerald);
+  animation:edot 2.5s ease-in-out infinite;
+}
+@keyframes edot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.6)}}
+
+.hero-h1{
+  font-family:var(--f-display);
+  font-size:clamp(3rem,6vw,5.5rem);
+  font-weight:700;line-height:1.05;
+  letter-spacing:-.03em;margin-bottom:1.5rem;
+}
+.h1-line1{display:block;color:var(--white)}
+.h1-line2{
+  display:block;
+  background:linear-gradient(90deg,var(--cyan) 0%,var(--violet) 50%,var(--emerald) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+
+.hero-sub{
+  font-size:1.15rem;color:var(--muted);line-height:1.8;
+  max-width:520px;margin-bottom:2.5rem;
+}
+
+.hero-actions{
+  display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:3.5rem;
+}
+.btn-glow{
+  display:inline-flex;align-items:center;gap:.6rem;
+  padding:1rem 2.2rem;
+  background:linear-gradient(135deg,var(--cyan),var(--violet));
+  border:none;border-radius:var(--r-sm);
+  font-family:var(--f-display);font-weight:700;font-size:.95rem;
+  color:var(--void);cursor:pointer;text-decoration:none;
+  transition:var(--tr);position:relative;overflow:hidden;
+  box-shadow:0 8px 30px rgba(255,140,0,.35);
+}
+.btn-glow::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.2),transparent);
+  opacity:0;transition:var(--tr);
+}
+.btn-glow:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(255,140,0,.5);color:var(--void)}
+.btn-glow:hover::after{opacity:1}
+.btn-outline{
+  display:inline-flex;align-items:center;gap:.6rem;
+  padding:1rem 2.2rem;
+  background:rgba(255,140,0,.06);
+  border:1.5px solid rgba(255,140,0,.35);
+  border-radius:var(--r-sm);
+  font-family:var(--f-display);font-weight:600;font-size:.95rem;
+  color:var(--cyan);cursor:pointer;text-decoration:none;transition:var(--tr);
+  backdrop-filter:blur(10px);
+}
+.btn-outline:hover{background:rgba(255,140,0,.12);border-color:var(--cyan);transform:translateY(-3px);color:var(--cyan)}
+
+.hero-stats{
+  display:flex;gap:3rem;flex-wrap:wrap;
+}
+.hstat-val{
+  font-family:var(--f-display);font-size:2rem;font-weight:700;
+  color:var(--white);line-height:1;
+}
+.hstat-val em{color:var(--cyan);font-style:normal}
+.hstat-label{
+  font-family:var(--f-mono);font-size:.72rem;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.14em;margin-top:.3rem;
+}
+
+/* Right side — subtle hint that model is interactive */
+.hero-model-hint{
+  position:relative;z-index:4;
+  display:flex;flex-direction:column;align-items:flex-end;
+  gap:1rem;
+  pointer-events:none;
+}
+.model-badge{
+  display:inline-flex;align-items:center;gap:.5rem;
+  padding:.5rem 1rem;
+  background:rgba(255,140,0,.08);
+  border:1px solid rgba(255,140,0,.2);
+  border-radius:100px;
+  font-family:var(--f-mono);font-size:.7rem;
+  color:var(--muted);letter-spacing:.1em;
+  backdrop-filter:blur(10px);
+}
+.model-badge span{width:6px;height:6px;background:var(--emerald);border-radius:50%;box-shadow:0 0 8px var(--emerald);animation:edot 2s infinite}
+
+.scroll-hint{
+  position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);
+  z-index:5;display:flex;flex-direction:column;align-items:center;gap:.6rem;
+}
+.scroll-hint span{
+  font-family:var(--f-mono);font-size:.68rem;color:var(--muted);
+  letter-spacing:.2em;text-transform:uppercase;
+}
+.scroll-line{
+  width:1px;height:50px;
+  background:linear-gradient(to bottom,var(--cyan),transparent);
+  animation:sline 2.5s ease-in-out infinite;
+  transform-origin:top;
+}
+@keyframes sline{0%{transform:scaleY(0)}50%{transform:scaleY(1)}100%{transform:scaleY(0);transform-origin:bottom}}
+
+/* ====================================================
+   STATS TICKER
+==================================================== */
+#ticker{
+  background:rgba(21,8,0,.9);
+  border-top:1px solid rgba(255,140,0,.10);
+  border-bottom:1px solid rgba(255,140,0,.10);
+  padding:1.4rem 0;overflow:hidden;position:relative;z-index:10;
+}
+#ticker::before,#ticker::after{
+  content:'';position:absolute;top:0;bottom:0;width:120px;z-index:2;pointer-events:none;
+}
+#ticker::before{left:0;background:linear-gradient(90deg,rgba(21,8,0,1),transparent)}
+#ticker::after{right:0;background:linear-gradient(-90deg,rgba(21,8,0,1),transparent)}
+.ticker-track{
+  display:flex;gap:3.5rem;align-items:center;
+  width:max-content;animation:ticker-scroll 35s linear infinite;
+}
+@keyframes ticker-scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.ticker-item{
+  display:flex;align-items:center;gap:1rem;white-space:nowrap;flex-shrink:0;
+}
+.ti-label{
+  font-family:var(--f-mono);font-size:.72rem;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.12em;
+}
+.ti-value{
+  font-family:var(--f-display);font-size:1.05rem;font-weight:600;color:var(--cyan);
+}
+.ti-sep{width:1px;height:20px;background:rgba(255,140,0,.2);flex-shrink:0}
+
+/* ====================================================
+   SECTION SHARED
+==================================================== */
+section{position:relative;overflow:hidden}
+.sc{max-width:1300px;margin:0 auto;padding:7rem 3rem}
+.s-eye{
+  display:inline-flex;align-items:center;gap:.6rem;
+  font-family:var(--f-mono);font-size:.75rem;font-weight:500;
+  color:var(--cyan);letter-spacing:.18em;text-transform:uppercase;
+  margin-bottom:1rem;
+}
+.s-eye::before{content:'';width:24px;height:2px;background:linear-gradient(90deg,var(--cyan),transparent);border-radius:1px}
+.s-title{
+  font-family:var(--f-display);
+  font-size:clamp(2rem,4vw,3.2rem);
+  font-weight:700;line-height:1.1;
+  letter-spacing:-.025em;margin-bottom:1rem;
+}
+.s-sub{font-size:1.1rem;color:var(--muted);line-height:1.8;max-width:600px}
+.tg{
+  background:linear-gradient(90deg,var(--cyan),var(--violet));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.grid-bg{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(255,140,0,.015) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,140,0,.015) 1px,transparent 1px);
+  background-size:80px 80px;pointer-events:none;
+}
+
+/* Reveal animation */
+.rv{opacity:0;transform:translateY(30px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+.rv.vis{opacity:1;transform:translateY(0)}
+
+/* ====================================================
+   ALGORITHM EXPLORER
+==================================================== */
+#explorer{background:var(--void)}
+.xgrid{
+  display:grid;grid-template-columns:280px 1fr;gap:2rem;
+  margin-top:3rem;
+}
+.algo-sidebar{display:flex;flex-direction:column;gap:.6rem}
+.algo-btn{
+  padding:1.2rem 1.5rem;
+  background:rgba(255,140,0,.04);
+  border:1.5px solid rgba(255,255,255,.06);
+  border-radius:var(--r-md);
+  cursor:pointer;transition:var(--tr);
+  position:relative;overflow:hidden;text-align:left;
+  color:var(--white);
+}
+.algo-btn::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;
+  width:3px;background:linear-gradient(var(--cyan),var(--violet));
+  transform:scaleY(0);transition:var(--tr);
+  border-radius:0 2px 2px 0;
+}
+.algo-btn:hover,.algo-btn.active{
+  background:rgba(255,140,0,.08);border-color:rgba(255,140,0,.25);
+}
+.algo-btn:hover::before,.algo-btn.active::before{transform:scaleY(1)}
+.ab-name{
+  font-family:var(--f-display);font-size:.95rem;font-weight:600;
+  color:var(--white);margin-bottom:.25rem;transition:var(--tr);
+}
+.algo-btn:hover .ab-name,.algo-btn.active .ab-name{color:var(--cyan)}
+.ab-tag{
+  font-family:var(--f-mono);font-size:.68rem;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.1em;
+}
+
+.xpanel{
+  background:rgba(255,140,0,.03);
+  border:1.5px solid rgba(255,140,0,.12);
+  border-radius:var(--r-lg);overflow:hidden;
+  display:flex;flex-direction:column;
+  backdrop-filter:blur(10px);
+}
+.xp-head{
+  padding:1.5rem 2rem;
+  background:rgba(255,140,0,.04);
+  border-bottom:1.5px solid rgba(255,140,0,.10);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;
+}
+.xp-title{font-family:var(--f-display);font-size:1.3rem;font-weight:700}
+.xp-badge{
+  padding:.25rem .8rem;
+  background:rgba(255,140,0,.1);border:1.5px solid rgba(255,140,0,.3);
+  border-radius:100px;font-family:var(--f-mono);font-size:.68rem;color:var(--cyan);
+}
+.xp-tabs{
+  display:flex;border-bottom:1.5px solid rgba(255,255,255,.06);
+  background:rgba(0,0,0,.2);
+}
+.xp-tab{
+  padding:.9rem 1.6rem;
+  font-family:var(--f-body);font-size:.88rem;font-weight:500;
+  color:var(--muted);border:none;background:none;cursor:pointer;
+  transition:var(--tr);position:relative;
+}
+.xp-tab::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;
+  height:2.5px;background:linear-gradient(90deg,var(--cyan),var(--violet));transform:scaleX(0);transition:var(--tr);border-radius:2px 2px 0 0;
+}
+.xp-tab:hover{color:var(--white)}
+.xp-tab.on{color:var(--cyan)}
+.xp-tab.on::after{transform:scaleX(1)}
+.xp-body{padding:2rem 2.5rem;flex:1;overflow-y:auto;min-height:340px}
+.tc{display:none;animation:tfade .4s ease}
+.tc.on{display:block}
+@keyframes tfade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+.adesc{font-size:1rem;color:var(--muted);line-height:1.8;margin-bottom:1.75rem}
+.ametrics{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-bottom:1.75rem}
+.ametric{
+  padding:1.25rem 1.5rem;
+  background:rgba(255,140,0,.05);border:1.5px solid rgba(255,140,0,.10);
+  border-radius:var(--r-md);
+}
+.am-label{
+  font-family:var(--f-mono);font-size:.68rem;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.12em;margin-bottom:.5rem;
+}
+.am-val{font-family:var(--f-display);font-size:1.2rem;font-weight:700;color:var(--cyan)}
+.circuit-box{
+  background:rgba(0,0,0,.5);
+  border:1.5px solid rgba(255,184,77,.15);border-radius:var(--r-md);
+  padding:1.6rem;overflow-x:auto;margin-bottom:1.5rem;
+}
+.circuit-desc{font-size:.9rem;color:var(--muted);line-height:1.7}
+
+.sim-btn{
+  width:100%;padding:1.1rem;
+  background:linear-gradient(135deg,var(--cyan),var(--violet));
+  border:none;border-radius:var(--r-sm);
+  font-family:var(--f-display);font-weight:700;font-size:.95rem;
+  color:var(--void);cursor:pointer;transition:var(--tr);
+  margin-bottom:1.5rem;position:relative;overflow:hidden;
+  box-shadow:0 6px 24px rgba(255,140,0,.3);
+}
+.sim-btn:hover:not(.loading){transform:translateY(-2px);box-shadow:0 12px 32px rgba(255,140,0,.45)}
+.sim-btn.loading::after{
+  content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);
+  animation:shimmer 1.4s infinite;
+}
+@keyframes shimmer{0%{left:-100%}100%{left:100%}}
+.rbar{display:flex;align-items:center;gap:1.25rem;margin-bottom:.8rem}
+.rbar-lbl{font-family:var(--f-mono);font-size:.8rem;color:var(--muted);min-width:140px}
+.rbar-track{flex:1;height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden}
+.rbar-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--violet));border-radius:4px;width:0;transition:width 1.2s var(--ease)}
+.rbar-pct{font-family:var(--f-mono);font-size:.8rem;font-weight:600;color:var(--emerald);min-width:50px;text-align:right}
+
+/* ====================================================
+   AI ASSISTANT
+==================================================== */
+#ai-lab{background:linear-gradient(180deg,var(--void) 0%,#150800 100%)}
+.ai-layout{
+  display:grid;grid-template-columns:1fr 360px;
+  gap:2.5rem;align-items:start;margin-top:3rem;
+}
+.chat-card{
+  background:rgba(255,140,0,.03);
+  border:1.5px solid rgba(255,140,0,.12);border-radius:var(--r-lg);
+  overflow:hidden;display:flex;flex-direction:column;height:600px;
+  backdrop-filter:blur(10px);
+}
+.chat-hdr{
+  padding:1.2rem 1.75rem;
+  background:rgba(255,140,0,.04);
+  border-bottom:1.5px solid rgba(255,140,0,.10);
+  display:flex;align-items:center;gap:1rem;
+}
+.chat-av{
+  width:38px;height:38px;
+  background:linear-gradient(135deg,var(--cyan),var(--violet));
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:.95rem;flex-shrink:0;
+  box-shadow:0 4px 16px rgba(255,140,0,.3);
+}
+.chat-name{font-family:var(--f-display);font-size:.95rem;font-weight:600}
+.chat-status{
+  font-size:.72rem;color:var(--emerald);
+  display:flex;align-items:center;gap:.4rem;
+}
+.chat-status::before{content:'';width:6px;height:6px;background:var(--emerald);border-radius:50%;box-shadow:0 0 8px var(--emerald);animation:edot 2s infinite}
+.chat-msgs{
+  flex:1;overflow-y:auto;padding:1.5rem;
+  display:flex;flex-direction:column;gap:1rem;
+}
+.chat-msgs::-webkit-scrollbar{width:3px}
+.chat-msgs::-webkit-scrollbar-thumb{background:rgba(255,140,0,.3)}
+.msg{display:flex;gap:.75rem;max-width:88%;animation:msgin .35s ease}
+@keyframes msgin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.msg.user{align-self:flex-end;flex-direction:row-reverse}
+.msg-av{
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0;
+}
+.msg.ai .msg-av{background:linear-gradient(135deg,var(--cyan),var(--violet))}
+.msg.user .msg-av{background:rgba(255,94,31,.25);border:1.5px solid rgba(255,94,31,.5)}
+.msg-bub{padding:.9rem 1.1rem;font-size:.88rem;line-height:1.65}
+.msg.ai .msg-bub{
+  background:rgba(255,140,0,.06);
+  border:1.5px solid rgba(255,140,0,.15);
+  border-radius:4px 16px 16px 16px;color:var(--muted);
+}
+.msg.user .msg-bub{
+  background:linear-gradient(135deg,rgba(255,140,0,.15),rgba(255,94,31,.15));
+  border:1.5px solid rgba(255,140,0,.22);
+  border-radius:16px 4px 16px 16px;color:var(--white);
+}
+.typing-wrap{display:flex;align-items:center;gap:4px;padding:.6rem .3rem}
+.tdot{width:7px;height:7px;background:var(--cyan);border-radius:50%;animation:tp 1.4s ease-in-out infinite}
+.tdot:nth-child(2){animation-delay:.2s}
+.tdot:nth-child(3){animation-delay:.4s}
+@keyframes tp{0%,100%{transform:scale(.6);opacity:.3}50%{transform:scale(1.1);opacity:1}}
+.chat-foot{
+  padding:1rem 1.5rem;
+  border-top:1.5px solid rgba(255,140,0,.08);
+  display:flex;gap:.8rem;align-items:flex-end;
+  background:rgba(0,0,0,.25);
+}
+.chat-input{
+  flex:1;background:rgba(255,255,255,.05);
+  border:1.5px solid rgba(255,255,255,.1);border-radius:12px;
+  padding:.8rem 1rem;
+  font-family:var(--f-body);font-size:.88rem;color:var(--white);
+  resize:none;min-height:44px;max-height:120px;overflow-y:auto;
+  transition:var(--tr);
+}
+.chat-input:focus{outline:none;border-color:rgba(255,140,0,.4);background:rgba(255,140,0,.04)}
+.chat-send{
+  width:44px;height:44px;
+  background:linear-gradient(135deg,var(--cyan),var(--violet));
+  border:none;border-radius:12px;color:var(--void);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:1rem;transition:var(--tr);flex-shrink:0;
+  box-shadow:0 4px 16px rgba(255,140,0,.3);
+}
+.chat-send:hover{transform:scale(1.08);box-shadow:0 6px 20px rgba(255,140,0,.45)}
+.chat-send:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+
+.ai-side{display:flex;flex-direction:column;gap:.9rem}
+.ai-side-title{font-family:var(--f-display);font-size:1rem;font-weight:600;margin-bottom:.4rem}
+.qchip{
+  padding:.9rem 1.1rem;
+  background:rgba(255,140,0,.03);
+  border:1.5px solid rgba(255,255,255,.06);border-radius:var(--r-md);
+  cursor:pointer;transition:var(--tr);
+}
+.qchip:hover{border-color:rgba(255,140,0,.3);background:rgba(255,140,0,.06);transform:translateX(4px)}
+.qchip .ci{font-size:1.1rem;display:block;margin-bottom:.25rem}
+.qchip .ct{font-size:.85rem;color:var(--muted);line-height:1.5;font-weight:500}
+.qchip:hover .ct{color:var(--white)}
+
+/* ====================================================
+   API KEY MODAL
+==================================================== */
+.modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.75);
+  backdrop-filter:blur(8px);
+  z-index:2000;
+  display:none;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .3s var(--ease);
+}
+.modal-overlay.open{display:flex;opacity:1}
+.key-modal{
+  background:var(--nebula);
+  border:1.5px solid rgba(255,140,0,.2);
+  border-radius:var(--r-lg);
+  padding:2.5rem;
+  max-width:480px;width:90%;
+  box-shadow:0 24px 80px rgba(0,0,0,.6);
+  position:relative;
+}
+.key-modal h3{
+  font-family:var(--f-display);font-size:1.4rem;font-weight:700;
+  margin-bottom:.5rem;
+}
+.key-modal p{
+  font-size:.9rem;color:var(--muted);line-height:1.7;
+  margin-bottom:1.5rem;
+}
+.key-modal label{
+  display:block;font-family:var(--f-mono);font-size:.72rem;
+  color:var(--muted);text-transform:uppercase;letter-spacing:.12em;
+  margin-bottom:.5rem;
+}
+.key-input{
+  width:100%;background:rgba(255,255,255,.05);
+  border:1.5px solid rgba(255,140,0,.25);border-radius:var(--r-sm);
+  padding:1rem;
+  font-family:var(--f-mono);font-size:.85rem;color:var(--white);
+  transition:var(--tr);margin-bottom:1rem;
+}
+.key-input:focus{outline:none;border-color:var(--cyan);background:rgba(255,140,0,.06)}
+.key-input::placeholder{color:rgba(255,248,240,.25)}
+.key-hint{
+  font-size:.78rem;color:var(--muted);line-height:1.6;
+  margin-bottom:1.5rem;
+}
+.key-hint a{color:var(--cyan);text-decoration:none;}
+.key-hint a:hover{text-decoration:underline;}
+.key-actions{display:flex;gap:1rem;}
+.key-btn{
+  flex:1;padding:.9rem;
+  font-family:var(--f-display);font-weight:600;font-size:.9rem;
+  border-radius:var(--r-sm);cursor:pointer;transition:var(--tr);border:none;
+}
+.key-btn.primary{
+  background:linear-gradient(135deg,var(--cyan),var(--violet));
+  color:var(--void);
+}
+.key-btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,140,0,.35)}
+.key-btn.secondary{
+  background:rgba(255,255,255,.05);
+  color:var(--muted);
+  border:1.5px solid rgba(255,255,255,.1);
+}
+.key-btn.secondary:hover{background:rgba(255,255,255,.08);color:var(--white)}
+.key-badge{
+  display:inline-flex;align-items:center;gap:.4rem;
+  padding:.35rem .9rem;
+  background:rgba(255,140,0,.08);border:1px solid rgba(255,140,0,.25);
+  border-radius:100px;font-family:var(--f-mono);font-size:.72rem;
+  color:var(--cyan);margin-bottom:1.5rem;
+}
+.key-badge i{font-size:.6rem;}
+
+/* ====================================================
+   CONCEPTS
+==================================================== */
+#concepts{background:var(--void)}
+.cg{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.6rem;margin-top:3rem}
+.ccard{
+  background:rgba(255,140,0,.03);
+  border:1.5px solid rgba(255,255,255,.06);border-radius:var(--r-lg);
+  padding:2rem;cursor:pointer;transition:var(--tr);
+  position:relative;overflow:hidden;
+}
+.ccard::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--cyan-dim),var(--violet-dim));
+  opacity:0;transition:var(--tr);
+}
+.ccard:hover{border-color:rgba(255,140,0,.25);transform:translateY(-6px);box-shadow:0 24px 56px rgba(0,0,0,.4)}
+.ccard:hover::before{opacity:1}
+.cc-icon{
+  width:52px;height:52px;
+  background:rgba(255,140,0,.08);border:1.5px solid rgba(255,140,0,.22);
+  border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;
+  font-size:1.4rem;margin-bottom:1.25rem;position:relative;z-index:1;
+  transition:var(--tr);
+}
+.ccard:hover .cc-icon{background:rgba(255,140,0,.15);border-color:rgba(255,140,0,.4);transform:scale(1.05)}
+.cc-title{font-family:var(--f-display);font-size:1.15rem;font-weight:700;margin-bottom:.75rem;position:relative;z-index:1}
+.cc-desc{font-size:.9rem;color:var(--muted);line-height:1.7;position:relative;z-index:1}
+.cc-link{
+  display:inline-flex;align-items:center;gap:.3rem;
+  margin-top:1rem;font-family:var(--f-mono);font-size:.75rem;
+  color:var(--cyan);text-decoration:none;transition:var(--tr);
+  position:relative;z-index:1;
+}
+.cc-link:hover{gap:.6rem;color:var(--cyan)}
+
+/* ====================================================
+   COMPLEXITY
+==================================================== */
+#complexity{background:linear-gradient(180deg,#150800 0%,var(--void) 100%)}
+.cx-grid{
+  display:grid;grid-template-columns:1.2fr 1fr;gap:2rem;
+  align-items:start;margin-top:3rem;
+}
+.cx-card{
+  background:rgba(255,140,0,.03);
+  border:1.5px solid rgba(255,140,0,.10);border-radius:var(--r-lg);
+  padding:2rem;
+}
+.cx-title{font-family:var(--f-display);font-size:1.05rem;font-weight:600;margin-bottom:1.75rem}
+.cx-table{width:100%;border-collapse:collapse}
+.cx-table th{
+  font-family:var(--f-mono);font-size:.68rem;text-transform:uppercase;
+  letter-spacing:.12em;color:var(--muted);
+  padding:.6rem .9rem;text-align:left;border-bottom:1.5px solid rgba(255,255,255,.06);
+}
+.cx-table td{
+  padding:.9rem .9rem;font-size:.88rem;color:var(--muted);
+  border-bottom:1.5px solid rgba(255,255,255,.04);transition:var(--tr);
+}
+.cx-table tr:hover td{color:var(--white);background:rgba(255,140,0,.03)}
+.cx-table td:first-child{font-family:var(--f-display);font-weight:600;color:var(--white)}
+.cx-table td:nth-child(3){font-family:var(--f-mono);font-size:.82rem;color:var(--emerald)}
+.badge-sp{
+  display:inline-flex;padding:.2rem .7rem;border-radius:100px;
+  font-family:var(--f-mono);font-size:.68rem;font-weight:600;
+}
+.sp-exp{background:rgba(255,94,31,.12);color:var(--violet);border:1.5px solid rgba(255,94,31,.3)}
+.sp-quad{background:rgba(255,184,77,.1);color:var(--emerald);border:1.5px solid rgba(255,184,77,.25)}
+.sp-poly{background:rgba(255,140,0,.1);color:var(--cyan);border:1.5px solid rgba(255,140,0,.2)}
+
+/* ====================================================
+   CIRCUIT LAB
+==================================================== */
+#circuit-lab{background:var(--void)}
+.clwrap{
+  background:rgba(255,140,0,.03);
+  border:1.5px solid rgba(255,140,0,.10);border-radius:var(--r-lg);
+  overflow:hidden;margin-top:2.5rem;
+  backdrop-filter:blur(10px);
+}
+.cl-head{
+  padding:1.2rem 1.75rem;
+  background:rgba(255,140,0,.03);
+  border-bottom:1.5px solid rgba(255,140,0,.10);
+  display:flex;flex-wrap:wrap;gap:.7rem;align-items:center;
+}
+.cl-head-label{
+  font-family:var(--f-mono);font-size:.72rem;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.12em;margin-right:.3rem;
+}
+.gbtn{
+  padding:.4rem .9rem;
+  background:rgba(255,255,255,.04);
+  border:1.5px solid rgba(255,255,255,.1);border-radius:8px;
+  font-family:var(--f-mono);font-size:.8rem;color:var(--white);
+  cursor:pointer;transition:var(--tr);
+}
+.gbtn:hover,.gbtn.sel{
+  background:rgba(255,140,0,.1);
+  border-color:rgba(255,140,0,.4);color:var(--cyan);
+}
+.gbtn-del{color:var(--violet)!important}
+.gbtn-del:hover{background:rgba(255,94,31,.1)!important;border-color:rgba(255,94,31,.4)!important}
+.gbtn-exp{background:rgba(255,140,0,.08)!important;border-color:rgba(255,140,0,.3)!important;color:var(--cyan)!important}
+.cl-body{padding:2rem;overflow-x:auto}
+#cb-svg{cursor:crosshair;display:block}
+.cl-hint{
+  font-family:var(--f-mono);font-size:.72rem;color:var(--muted);
+  text-align:center;padding:.9rem;letter-spacing:.1em;
+}
+
+/* ====================================================
+   FOOTER
+==================================================== */
+footer{background:rgba(21,8,0,.95);border-top:1.5px solid rgba(255,140,0,.10)}
+.footer-in{max-width:1300px;margin:0 auto;padding:5rem 3rem 2.5rem}
+.footer-g{display:grid;grid-template-columns:2.2fr 1fr 1fr 1fr;gap:3.5rem;margin-bottom:3.5rem}
+.fb-name{
+  font-family:var(--f-display);font-size:1.25rem;font-weight:700;
+  display:flex;align-items:center;gap:.6rem;margin-bottom:1rem;
+}
+.fb-desc{font-size:.9rem;color:var(--muted);line-height:1.7;max-width:300px}
+.fc-title{
+  font-family:var(--f-display);font-size:.82rem;font-weight:600;
+  text-transform:uppercase;letter-spacing:.14em;
+  margin-bottom:1.25rem;
+}
+.fc-links{list-style:none;display:flex;flex-direction:column;gap:.8rem}
+.fc-links a{font-size:.88rem;color:var(--muted);text-decoration:none;transition:var(--tr)}
+.fc-links a:hover{color:var(--cyan)}
+.footer-bot{
+  padding-top:2rem;border-top:1.5px solid rgba(255,255,255,.06);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;
+}
+.footer-bot p{font-size:.8rem;color:rgba(255,248,240,.35)}
+.socials{display:flex;gap:.7rem}
+.soc-a{
+  width:34px;height:34px;
+  background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.1);
+  border-radius:8px;display:flex;align-items:center;justify-content:center;
+  color:var(--muted);text-decoration:none;font-size:.85rem;transition:var(--tr);
+}
+.soc-a:hover{background:rgba(255,140,0,.1);border-color:rgba(255,140,0,.3);color:var(--cyan)}
+
+/* ====================================================
+   RESPONSIVE
+==================================================== */
+@media(max-width:1100px){
+  .hero-inner{grid-template-columns:1fr;padding-top:6rem}
+  .hero-model-hint{display:none}
+  .hero-overlay{background:linear-gradient(180deg,rgba(10,4,0,.92) 0%,rgba(10,4,0,.70) 50%,rgba(10,4,0,.40) 100%)}
+  .ai-layout{grid-template-columns:1fr}
+  .ai-side{display:grid;grid-template-columns:1fr 1fr}
+  .footer-g{grid-template-columns:1fr 1fr}
+  .cx-grid{grid-template-columns:1fr}
+}
+@media(max-width:768px){
+  .nav-links,.nav-cta{display:none}
+  .hamburger{display:flex}
+  .qnav{padding:1rem 1.5rem}
+  .qnav.scrolled{padding:.8rem 1.5rem}
+  .hero-inner{padding:6rem 1.5rem 3rem}
+  .sc{padding:5rem 1.5rem}
+  .xgrid{grid-template-columns:1fr}
+  .algo-sidebar{flex-direction:row;flex-wrap:wrap}
+  .algo-btn{flex:1;min-width:150px}
+  .ametrics{grid-template-columns:1fr}
+  .footer-g{grid-template-columns:1fr}
+  .ai-side{grid-template-columns:1fr}
+  .cx-grid{grid-template-columns:1fr}
+  .hero-stats{gap:2rem}
+  .hstat-val{font-size:1.6rem}
+  .key-modal{padding:1.8rem}
+}
+@media(max-width:480px){
+  .hero-h1{font-size:2.5rem}
+  .hero-actions{flex-direction:column}
+  .btn-glow,.btn-outline{width:100%;justify-content:center}
+  .key-actions{flex-direction:column}
+}
+</style>
 </head>
 <body>
-    <header>
-        <h1 class="glow-text">Quantum Realm Explorer</h1>
-        <p>Unveiling the Mysteries of Quantum Algorithms</p>
-    </header>
 
-    <div class="container">
-        <div class="quantum-grid">
-            <div class="quantum-card floating">
-                <h2 class="glow-text">Select Algorithm</h2>
-                <select id="algorithm-select">
-                    <option value="grover">Grover's Algorithm</option>
-                    <option value="shor">Shor's Algorithm</option>
-                    <option value="qft">Quantum Fourier Transform</option>
-                    <option value="vqe">Variational Quantum Eigensolver</option>
-                    <option value="qaoa">Quantum Approximate Optimization Algorithm</option>
-                </select>
-            </div>
+<!-- ========= API KEY MODAL ========= -->
+<div class="modal-overlay" id="key-modal-overlay">
+  <div class="key-modal">
+    <div class="key-badge"><i class="fas fa-shield-halved"></i> Secure Local Storage</div>
+    <h3>Configure Groq API Key</h3>
+    <p>The AI Assistant requires a Groq API key to generate responses. Your key is stored only in your browser's localStorage and is never sent to our servers.</p>
+    
+    <label for="groq-key-input">Groq API Key</label>
+    <input type="password" id="groq-key-input" class="key-input" placeholder="gsk_xxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+    
+    <div class="key-hint">
+      <i class="fas fa-circle-info" style="color:var(--cyan);margin-right:.3rem;"></i>
+      Get your free key at <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a>. 
+      The key will be saved locally for future sessions.
+    </div>
+    
+    <div class="key-actions">
+      <button class="key-btn secondary" onclick="closeKeyModal()">Cancel</button>
+      <button class="key-btn primary" onclick="saveKey()">Save & Connect</button>
+    </div>
+  </div>
+</div>
 
-            <div class="quantum-card">
-                <h2 class="glow-text">Algorithm Description</h2>
-                <div id="algorithm-description"></div>
-            </div>
+<!-- ========= PRELOADER ========= -->
+<div id="preloader">
+  <div class="pre-atom"><div class="pre-dot"></div></div>
+  <div class="pre-title">QRE // v3.0</div>
+  <div class="pre-bar"><div class="pre-fill"></div></div>
+  <div class="pre-text" id="pre-text">Initializing quantum states…</div>
+</div>
 
-            <div class="quantum-card">
-                <h2 class="glow-text">Quantum Circuit</h2>
-                <div id="quantum-circuit"></div>
-            </div>
+<!-- ========= NAVBAR ========= -->
+<<nav class="qnav" id="qnav">
+  <a href="#" class="nav-brand">
+    <div class="brand-icon">⚛</div>
+    <span>Quantum<span class="brand-span">RE</span></span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#explorer">Explorer</a></li>
+    <li><a href="#ai-lab">AI Lab</a></li>
+    <li><a href="#concepts">Concepts</a></li>
+    <li><a href="#complexity">Complexity</a></li>
+    <li><a href="#circuit-lab">Circuits</a></li>
+  </ul>
+  <a href="#explorer" class="nav-cta">Launch Simulation →</a>
+  <button class="hamburger" id="ham" onclick="toggleDrawer()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
 
-            <div class="quantum-card floating">
-                <button id="run-algorithm">Initialize Quantum Simulation</button>
-                <div id="result"></div>
-            </div>
+<!-- MOBILE DRAWER -->
+<div class="mobile-drawer" id="drawer">
+  <a href="#explorer" onclick="closeDrawer()">Algorithm Explorer</a>
+  <a href="#ai-lab" onclick="closeDrawer()">AI Lab</a>
+  <a href="#concepts" onclick="closeDrawer()">Concepts</a>
+  <a href="#complexity" onclick="closeDrawer()">Complexity</a>
+  <a href="#circuit-lab" onclick="closeDrawer()">Circuit Lab</a>
+</div>
+
+<!-- ========= HERO ========= -->
+<section id="hero">
+  <!-- Spline 3D Model — Full background -->
+  <div class="hero-spline-bg">
+    <spline-viewer url="https://prod.spline.design/Q1EeZJggg1Zi6SRw/scene.splinecode" loading="eager"></spline-viewer>
+  </div>
+
+  <!-- Overlay for text readability -->
+  <div class="hero-overlay"></div>
+
+  <!-- Three.js particles -->
+  <canvas id="three-canvas"></canvas>
+  <div class="hero-grid-bg"></div>
+  <div class="hero-radial hr1"></div>
+  <div class="hero-radial hr2"></div>
+
+  <div class="hero-inner">
+    <!-- Left: Text content -->
+    <div class="hero-content">
+      <div class="hero-eyebrow" id="he">
+        <span class="eyebrow-dot"></span>
+        Quantum Algorithm Platform
+      </div>
+      <h1 class="hero-h1" id="hh">
+        <span class="h1-line1">Explore the</span>
+        <span class="h1-line2">Quantum Realm</span>
+      </h1>
+      <p class="hero-sub" id="hs">
+        Simulate, visualize, and understand groundbreaking quantum algorithms through an immersive interactive platform. Powered by Groq AI — built for the quantum era.
+      </p>
+      <div class="hero-actions" id="ha">
+        <a href="#explorer" class="btn-glow"><i class="fas fa-atom"></i> Launch Explorer</a>
+        <a href="#ai-lab" class="btn-outline"><i class="fas fa-robot"></i> Ask AI</a>
+      </div>
+      <div class="hero-stats" id="hst">
+        <div>
+          <div class="hstat-val">5<<em>+</em></div>
+          <div class="hstat-label">Algorithms</div>
         </div>
+        <div>
+          <div class="hstat-val">∞</div>
+          <div class="hstat-label">Simulations</div>
+        </div>
+        <div>
+          <div class="hstat-val">AI<<em>↑</em></div>
+          <div class="hstat-label">Groq Powered</div>
+        </div>
+        <div>
+          <div class="hstat-val">0<<em>ms</em></div>
+          <div class="hstat-label">Latency</div>
+        </div>
+      </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const algorithmDescriptions = {
-                'grover': 'Grovers algorithm provides a quadratic speedup for searching an unsorted database, demonstrating quantum supremacy in search operations.',
-                'shor': 'Shors algorithm exponentially outperforms classical factoring algorithms, posing a significant threat to RSA encryption.',
-                'qft': 'The Quantum Fourier Transform is a linear transformation on qubits and is the quantum analogue of the discrete Fourier transform.',
-                'vqe': 'The Variational Quantum Eigensolver is a hybrid quantum-classical algorithm used for finding eigenvalues of a matrix, particularly in quantum chemistry.',
-                'qaoa': 'The Quantum Approximate Optimization Algorithm is designed to run on near-term quantum devices for solving combinatorial optimization problems.'
-            };
+    <!-- Right: Model interaction hint -->
+    <div class="hero-model-hint" id="hspline">
+      <div class="model-badge">
+        <span></span> Interactive 3D Model — Drag to Rotate
+      </div>
+    </div>
+  </div>
 
-            const algorithmSelect = document.getElementById('algorithm-select');
-            const descriptionDiv = document.getElementById('algorithm-description');
-            const resultDiv = document.getElementById('result');
-            const circuitDiv = document.getElementById('quantum-circuit');
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
 
-            algorithmSelect.addEventListener('change', updateAlgorithmInfo);
+<!-- ========= TICKER ========= -->
+<div id="ticker">
+  <div class="ticker-track" id="ticker-track"></div>
+</div>
 
-            document.getElementById('run-algorithm').addEventListener('click', runAlgorithm);
+<!-- ========= ALGORITHM EXPLORER ========= -->
+<section id="explorer">
+  <div class="grid-bg"></div>
+  <div class="sc">
+    <div class="rv">
+      <div class="s-eye">Algorithm Explorer</div>
+      <h2 class="s-title">Simulate <span class="tg">Quantum Algorithms</span></h2>
+      <p class="s-sub">Dive deep into groundbreaking quantum algorithms through interactive simulations, circuit diagrams, and probability visualizations.</p>
+    </div>
+    <div class="xgrid">
+      <!-- Sidebar -->
+      <div class="algo-sidebar rv" style="transition-delay:.05s">
+        <button class="algo-btn active" data-a="grover" onclick="pickAlgo('grover',this)">
+          <div class="ab-name">Grover's Search</div>
+          <div class="ab-tag">Search · O(√N)</div>
+        </button>
+        <button class="algo-btn" data-a="shor" onclick="pickAlgo('shor',this)">
+          <div class="ab-name">Shor's Factoring</div>
+          <div class="ab-tag">Cryptography · Poly</div>
+        </button>
+        <button class="algo-btn" data-a="qft" onclick="pickAlgo('qft',this)">
+          <div class="ab-name">Quantum Fourier</div>
+          <div class="ab-tag">Transform · O(n²)</div>
+        </button>
+        <button class="algo-btn" data-a="vqe" onclick="pickAlgo('vqe',this)">
+          <div class="ab-name">VQE Eigensolver</div>
+          <div class="ab-tag">Chemistry · Hybrid</div>
+        </button>
+        <button class="algo-btn" data-a="qaoa" onclick="pickAlgo('qaoa',this)">
+          <div class="ab-name">QAOA Optimizer</div>
+          <div class="ab-tag">Optimization · NISQ</div>
+        </button>
+      </div>
 
-            function updateAlgorithmInfo() {
-                const selectedAlgorithm = algorithmSelect.value;
-                descriptionDiv.innerHTML = `<p>${algorithmDescriptions[selectedAlgorithm] || 'Description not available.'}</p>`;
-                circuitDiv.innerHTML = 'Quantum circuit will be generated upon simulation.';
-                resultDiv.innerHTML = '';
-            }
+      <!-- Panel -->
+      <div class="xpanel rv" style="transition-delay:.1s">
+        <div class="xp-head">
+          <div class="xp-title" id="xp-title">Grover's Search Algorithm</div>
+          <div class="xp-badge" id="xp-badge">QUANTUM SEARCH</div>
+        </div>
+        <div class="xp-tabs">
+          <button class="xp-tab on" onclick="switchTab('overview',this)">Overview</button>
+          <button class="xp-tab" onclick="switchTab('circuit',this)">Circuit</button>
+          <button class="xp-tab" onclick="switchTab('simulate',this)">Simulate</button>
+        </div>
+        <div class="xp-body">
+          <!-- Overview -->
+          <div class="tc on" id="tc-overview">
+            <p class="adesc" id="adesc"></p>
+            <div class="ametrics" id="ametrics"></div>
+          </div>
+          <!-- Circuit -->
+          <div class="tc" id="tc-circuit">
+            <div class="circuit-box">
+              <svg id="ckt-svg" height="190" style="min-width:520px"></svg>
+            </div>
+            <p class="circuit-desc" id="ckt-desc"></p>
+          </div>
+          <!-- Simulate -->
+          <div class="tc" id="tc-simulate">
+            <button class="sim-btn" id="sim-btn" onclick="runSim()">▶ Run Quantum Simulation</button>
+            <div id="rbar-wrap"></div>
+            <div style="margin-top:1.5rem"><canvas id="rchart" height="170"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
-            function runAlgorithm() {
-                const algorithm = algorithmSelect.value;
-                resultDiv.innerHTML = '<p>Initializing quantum state...</p>';
-                circuitDiv.innerHTML = '';
+<!-- ========= AI LAB ========= -->
+<section id="ai-lab">
+  <div class="sc">
+    <div class="rv">
+      <div class="s-eye">AI Lab</div>
+      <h2 class="s-title">Your Quantum <span class="tg">AI Guide</span></h2>
+      <p class="s-sub">Ask anything about quantum computing. Powered by Groq's ultra-fast LLaMA 70B inference engine for instant expert answers.</p>
+    </div>
+    <div class="ai-layout">
+      <!-- Chat -->
+      <div class="chat-card rv">
+        <div class="chat-hdr">
+          <div class="chat-av">⚛</div>
+          <div style="flex:1">
+            <div class="chat-name">Quantum AI Assistant</div>
+            <div class="chat-status" id="chat-status">Online · Groq LLaMA-70B</div>
+          </div>
+          <button onclick="openKeyModal()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:.4rem;border-radius:8px;transition:var(--tr);" onmouseover="this.style.color='var(--cyan)'" onmouseout="this.style.color='var(--muted)'" title="Configure API Key">
+            <i class="fas fa-gear"></i>
+          </button>
+        </div>
+        <div class="chat-msgs" id="chat-msgs">
+          <div class="msg ai">
+            <div class="msg-av">⚛</div>
+            <div class="msg-bub">Hello! I'm your Quantum AI, powered by Groq's LLaMA 70B engine. I can explain quantum algorithms, walk through circuit design, or dive into the mathematics of quantum mechanics. What would you like to explore? ⚡<<br><br><em style="opacity:.6;font-size:.8rem">Click the gear icon above to configure your Groq API key.</em></div>
+          </div>
+        </div>
+        <div class="chat-foot">
+          <textarea class="chat-input" id="chat-in" placeholder="Ask about quantum algorithms…" rows="1"
+            onkeydown="chatKey(event)" oninput="autoH(this)"></textarea>
+          <button class="chat-send" id="chat-send" onclick="sendChat()">
+            <i class="fas fa-arrow-up"></i>
+          </button>
+        </div>
+      </div>
+      <!-- Side prompts -->
+      <div class="ai-side rv" style="transition-delay:.1s">
+        <div class="ai-side-title">Quick Prompts</div>
+        <div class="qchip" onclick="useP(this)">
+          <span class="ci">🔍</span>
+          <span class="ct">How does Grover's algorithm achieve quadratic speedup?</span>
+        </div>
+        <div class="qchip" onclick="useP(this)">
+          <span class="ci">🔐</span>
+          <span class="ct">Why does Shor's algorithm threaten RSA encryption?</span>
+        </div>
+        <div class="qchip" onclick="useP(this)">
+          <span class="ci">🌊</span>
+          <span class="ct">Explain quantum superposition in simple terms</span>
+        </div>
+        <div class="qchip" onclick="useP(this)">
+          <span class="ci">🔗</span>
+          <span class="ct">What is quantum entanglement and how is it used in algorithms?</span>
+        </div>
+        <div class="qchip" onclick="useP(this)">
+          <span class="ci">⚗️</span>
+          <span class="ct">What real-world problems will quantum computers solve first?</span>
+        </div>
+        <div class="qchip" onclick="useP(this)">
+          <span class="ci">📊</span>
+          <span class="ct">Compare NISQ devices to fault-tolerant quantum computers</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
-                setTimeout(() => {
-                    let result, circuit;
-                    try {
-                        [result, circuit] = simulateQuantumAlgorithm(algorithm);
-                        resultDiv.innerHTML = `<p>Simulation Result:</p><pre>${JSON.stringify(result, null, 2)}</pre>`;
-                        circuitDiv.innerHTML = `<pre>${circuit.join('\n')}</pre>`;
-                    } catch (error) {
-                        resultDiv.innerHTML = `<p>Error: ${error.message}</p>`;
-                    }
-                }, 1500);
-            }
+<!-- ========= CONCEPTS ========= -->
+<section id="concepts">
+  <div class="sc">
+    <div class="rv">
+      <div class="s-eye">Foundations</div>
+      <h2 class="s-title">Core <span class="tg">Quantum Concepts</span></h2>
+      <p class="s-sub">Build your intuition for quantum mechanics through carefully crafted explanations of the fundamental principles that power quantum computing.</p>
+    </div>
+    <div class="cg">
+      <div class="ccard rv">
+        <div class="cc-icon">🌊</div>
+        <div class="cc-title">Superposition</div>
+        <p class="cc-desc">Unlike classical bits, qubits can exist in multiple states simultaneously — a fundamental property enabling quantum parallelism and exponential computational power over classical systems.</p>
+        <a href="#ai-lab" class="cc-link">Ask AI about this →</a>
+      </div>
+      <div class="ccard rv" style="transition-delay:.05s">
+        <div class="cc-icon">🔗</div>
+        <div class="cc-title">Entanglement</div>
+        <p class="cc-desc">Two or more qubits become quantum mechanically linked, so measuring one instantly determines the state of the other — regardless of the distance separating them.</p>
+        <a href="#ai-lab" class="cc-link">Ask AI about this →</a>
+      </div>
+      <div class="ccard rv" style="transition-delay:.1s">
+        <div class="cc-icon">🌀</div>
+        <div class="cc-title">Interference</div>
+        <p class="cc-desc">Quantum algorithms harness wave-like interference to amplify correct answers and cancel incorrect ones — analogous to how noise-cancelling headphones work, but for computation.</p>
+        <a href="#ai-lab" class="cc-link">Ask AI about this →</a>
+      </div>
+      <div class="ccard rv" style="transition-delay:.15s">
+        <div class="cc-icon">📐</div>
+        <div class="cc-title">Quantum Gates</div>
+        <p class="cc-desc">The quantum equivalents of classical logic gates — unitary transformations on qubits including the Hadamard gate, CNOT, Toffoli, and the Pauli X, Y, Z matrices.</p>
+        <a href="#ai-lab" class="cc-link">Ask AI about this →</a>
+      </div>
+      <div class="ccard rv" style="transition-delay:.2s">
+        <div class="cc-icon">👁️</div>
+        <div class="cc-title">Measurement</div>
+        <p class="cc-desc">Measuring a qubit collapses its superposition to a definite classical state — a probabilistic process governed by Born's rule where probability equals the amplitude squared.</p>
+        <a href="#ai-lab" class="cc-link">Ask AI about this →</a>
+      </div>
+      <div class="ccard rv" style="transition-delay:.25s">
+        <div class="cc-icon">🛡️</div>
+        <div class="cc-title">Error Correction</div>
+        <p class="cc-desc">Quantum error correction encodes logical qubits across multiple physical qubits, protecting against decoherence and gate errors — the key to fault-tolerant quantum computation.</p>
+        <a href="#ai-lab" class="cc-link">Ask AI about this →</a>
+      </div>
+    </div>
+  </div>
+</section>
 
-            function simulateQuantumAlgorithm(algorithm) {
-                // This is a simplified simulation
-                const circuit = generateQuantumCircuit(algorithm);
-                const result = generateQuantumResult(algorithm);
-                return [result, circuit];
-            }
+<!-- ========= COMPLEXITY ========= -->
+<section id="complexity">
+  <div class="sc">
+    <div class="rv">
+      <div class="s-eye">Performance Analysis</div>
+      <h2 class="s-title">Quantum vs Classical <span class="tg">Complexity</span></h2>
+      <p class="s-sub">Visualize the asymptotic speedups quantum algorithms deliver over their classical counterparts across different problem domains.</p>
+    </div>
+    <div class="cx-grid">
+      <div class="cx-card rv">
+        <div class="cx-title">Computational Complexity Growth</div>
+        <canvas id="cxchart" height="270"></canvas>
+      </div>
+      <div class="cx-card rv" style="transition-delay:.1s">
+        <div class="cx-title">Speedup Reference Table</div>
+        <table class="cx-table">
+          <thead><tr><th>Algorithm</th><th>Classical</th><th>Quantum</th><th>Type</th></tr></thead>
+          <tbody>
+            <tr><td>Database Search</td><td>O(N)</td><td>O(√N)</td><td><span class="badge-sp sp-quad">Quadratic</span></td></tr>
+            <tr><td>Integer Factoring</td><td>O(e^N^⅓)</td><td>O(N³)</td><td><span class="badge-sp sp-exp">Exponential</span></td></tr>
+            <tr><td>Quantum Simulation</td><td>O(e^N)</td><td>O(N³)</td><td><span class="badge-sp sp-exp">Exponential</span></td></tr>
+            <tr><td>Linear Systems (HHL)</td><td>O(N^2.4)</td><td>O(log N)</td><td><span class="badge-sp sp-exp">Exponential</span></td></tr>
+            <tr><td>Optimization (QAOA)</td><td>O(2^N)</td><td>O(N^1.5)</td><td><span class="badge-sp sp-poly">Polynomial</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
 
-            function generateQuantumCircuit(algorithm) {
-                const circuits = {
-                    'grover': ['H all', 'CNOT q[0], q[1]', 'H q[0]', 'Measure all'],
-                    'shor': ['H q[0-4]', 'CPHASE q[0], q[5]', 'QFT q[0-4]', 'Measure q[0-4]'],
-                    'qft': ['H q[0]', 'CPHASE(π/2) q[0], q[1]', 'H q[1]', 'Measure all'],
-                    'vqe': ['Ry(θ) q[0]', 'CNOT q[0], q[1]', 'Measure q[1]'],
-                    'qaoa': ['H all', 'QAOA_layers', 'Measure all']
-                };
-                return circuits[algorithm] || ['Algorithm circuit not implemented'];
-            }
+<!-- ========= CIRCUIT LAB ========= -->
+<section id="circuit-lab">
+  <div class="sc">
+    <div class="rv">
+      <div class="s-eye">Circuit Lab</div>
+      <h2 class="s-title">Interactive <span class="tg">Circuit Builder</span></h2>
+      <p class="s-sub">Click a gate, then click a qubit wire to place it. Build custom quantum circuits and export them for use in Qiskit or other quantum frameworks.</p>
+    </div>
+    <div class="clwrap rv">
+      <div class="cl-head">
+        <span class="cl-head-label">Gates:</span>
+        <button class="gbtn sel" onclick="selGate('H',this)">H</button>
+        <button class="gbtn" onclick="selGate('X',this)">X</button>
+        <button class="gbtn" onclick="selGate('Y',this)">Y</button>
+        <button class="gbtn" onclick="selGate('Z',this)">Z</button>
+        <button class="gbtn" onclick="selGate('CNOT',this)">CNOT</button>
+        <button class="gbtn" onclick="selGate('T',this)">T</button>
+        <button class="gbtn" onclick="selGate('S',this)">S</button>
+        <button class="gbtn" onclick="selGate('RZ',this)">Rz</button>
+        <button class="gbtn" onclick="selGate('M',this)">Measure</button>
+        <div style="margin-left:auto;display:flex;gap:.6rem">
+          <button class="gbtn gbtn-del" onclick="clearCB()">Clear</button>
+          <button class="gbtn gbtn-exp" onclick="exportCB()">Export</button>
+        </div>
+      </div>
+      <div class="cl-body">
+        <svg id="cb-svg" height="230"></svg>
+      </div>
+      <div class="cl-hint">Click on a wire to place the selected gate · Click the × on a gate to remove it</div>
+    </div>
+  </div>
+</section>
 
-            function generateQuantumResult(algorithm) {
-                const results = {
-                    'grover': { '00': 0.02, '01': 0.02, '10': 0.02, '11': 0.94 },
-                    'shor': { 'factors': [3, 5], 'probability': 0.97 },
-                    'qft': { 'phase': 0.25, 'accuracy': 0.99 },
-                    'vqe': { 'ground_state_energy': -1.137, 'confidence': 0.95 },
-                    'qaoa': { 'optimal_solution': [1, 0, 1, 1, 0], 'approximation_ratio': 0.967 }
-                };
-                return results[algorithm] || { 'error': 'Result not implemented' };
-            }
+<!-- ========= FOOTER ========= -->
+<<footer>
+  <div class="footer-in">
+    <div class="footer-g">
+      <div>
+        <div class="fb-name">⚛ QuantumRE</div>
+        <p class="fb-desc">An immersive quantum algorithm exploration platform for developers, researchers, and quantum enthusiasts entering the post-classical era.</p>
+      </div>
+      <div>
+        <div class="fc-title">Algorithms</div>
+        <ul class="fc-links">
+          <li><a href="#explorer">Grover's Search</a></li>
+          <li><a href="#explorer">Shor's Factoring</a></li>
+          <li><a href="#explorer">Quantum Fourier</a></li>
+          <li><a href="#explorer">VQE</a></li>
+          <li><a href="#explorer">QAOA</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="fc-title">Platform</div>
+        <ul class="fc-links">
+          <li><a href="#ai-lab">AI Assistant</a></li>
+          <li><a href="#circuit-lab">Circuit Lab</a></li>
+          <li><a href="#complexity">Complexity</a></li>
+          <li><a href="#concepts">Concepts</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="fc-title">Resources</div>
+        <ul class="fc-links">
+          <li><a href="https://qiskit.org" target="_blank">Qiskit Docs</a></li>
+          <li><a href="https://quantum.ibm.com" target="_blank">IBM Quantum</a></li>
+          <li><a href="https://arxiv.org/list/quant-ph/recent" target="_blank">arXiv Papers</a></li>
+          <li><a href="https://pennylane.ai" target="_blank">PennyLane</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bot">
+      <p>© 2025 Quantum Realm Explorer · Built for the quantum generation ⚛</p>
+      <div class="socials">
+        <a href="#" class="soc-a"><i class="fab fa-github"></i></a>
+        <a href="#" class="soc-a"><i class="fab fa-twitter"></i></a>
+        <a href="#" class="soc-a"><i class="fab fa-linkedin-in"></i></a>
+      </div>
+    </div>
+  </div>
+</footer>
 
-            // Initialize
-            updateAlgorithmInfo();
+<!-- ========= SCRIPTS ========= -->
+<script>
+/* =====================================================
+   CONSTANTS
+===================================================== */
+const GM = 'llama-3.3-70b-versatile';
+const LS_KEY = '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';
 
-            // Particle effect
-            function createParticle() {
-                const particle = document.createElement('div');
-                particle.classList.add('particle');
-                particle.style.left = Math.random() * window.innerWidth + 'px';
-                particle.style.top = Math.random() * window.innerHeight + 'px';
-                document.body.appendChild(particle);
+/* =====================================================
+   API KEY MANAGEMENT
+===================================================== */
+function getGroqKey(){
+  return localStorage.getItem(LS_KEY)?.trim() || '';
+}
 
-                setTimeout(() => {
-                    particle.remove();
-                }, 5000);
-            }
+function saveKey(){
+  const input = document.getElementById('groq-key-input');
+  const key = input.value.trim();
+  if(!key){
+    input.style.borderColor = '#EF4444';
+    input.placeholder = 'Please enter a valid key';
+    return;
+  }
+  if(!key.startsWith('gsk_')){
+    input.style.borderColor = '#EF4444';
+    alert('Groq API keys start with "gsk_". Please check your key.');
+    return;
+  }
+  localStorage.setItem(LS_KEY, key);
+  input.style.borderColor = 'rgba(255,140,0,.25)';
+  closeKeyModal();
+  updateKeyStatus();
+  appendMsg('ai', '🔐 API key saved successfully! You can now start chatting with the Quantum AI. Click a quick prompt or type your own question.');
+}
 
-            setInterval(createParticle, 200);
-        });
-    </script>
+function openKeyModal(){
+  const overlay = document.getElementById('key-modal-overlay');
+  const input = document.getElementById('groq-key-input');
+  const existing = getGroqKey();
+  if(existing) input.value = existing;
+  overlay.classList.add('open');
+  setTimeout(()=>input.focus(),100);
+}
+
+function closeKeyModal(){
+  document.getElementById('key-modal-overlay').classList.remove('open');
+}
+
+function updateKeyStatus(){
+  const status = document.getElementById('chat-status');
+  const key = getGroqKey();
+  if(key){
+    status.innerHTML = 'Online · Groq LLaMA-70B · <span style="color:var(--emerald)">Key Ready</span>';
+  } else {
+    status.innerHTML = 'Online · Groq LLaMA-70B · <span style="color:var(--violet)">Key Missing</span>';
+  }
+}
+
+// Close modal on overlay click
+document.getElementById('key-modal-overlay').addEventListener('click', e=>{
+  if(e.target === e.currentTarget) closeKeyModal();
+});
+
+/* =====================================================
+   ALGORITHM DATA
+===================================================== */
+const ALGOS = {
+  grover:{
+    title:"Grover's Search Algorithm",badge:"QUANTUM SEARCH",
+    desc:"Grover's algorithm provides a quadratic speedup for searching an unsorted database — finding a target item in O(√N) oracle calls vs O(N) classically. It amplifies the amplitude of the target state through repeated application of the oracle and diffusion operators, leveraging quantum interference.",
+    metrics:[{l:"Complexity",v:"O(√N)"},{l:"Speedup",v:"Quadratic"},{l:"Qubits",v:"log₂(N)"}],
+    cktDesc:"The circuit applies H to all qubits (superposition), then alternates the phase oracle (marks the target with a phase flip) and Grover diffusion operator (inversion about mean), amplifying the target state's probability with each iteration.",
+    results:{"∣00⟩":0.02,"∣01⟩":0.02,"∣10⟩":0.02,"∣11⟩":0.94},
+    gates:[
+      {t:'H',q:0,c:0},{t:'H',q:1,c:0},{t:'H',q:2,c:0},
+      {t:'ORACLE',q:0,c:1,tq:2},
+      {t:'H',q:0,c:2},{t:'H',q:1,c:2},{t:'H',q:2,c:2},
+      {t:'X',q:0,c:3},{t:'X',q:1,c:3},{t:'X',q:2,c:3},
+      {t:'H',q:0,c:4},{t:'H',q:1,c:4},{t:'H',q:2,c:4},
+      {t:'M',q:0,c:5},{t:'M',q:1,c:5},{t:'M',q:2,c:5}
+    ]
+  },
+  shor:{
+    title:"Shor's Factoring Algorithm",badge:"CRYPTOGRAPHY",
+    desc:"Shor's algorithm factors large integers in polynomial time using quantum parallelism and the Quantum Fourier Transform to find the period of modular exponentiation — posing a fundamental threat to RSA and elliptic-curve cryptography that secure today's internet.",
+    metrics:[{l:"Complexity",v:"O(n³)"},{l:"Speedup",v:"Exponential"},{l:"Qubits",v:"2n + 3"}],
+    cktDesc:"Two quantum registers are initialized: one to superposition of all inputs, one for the function output. Controlled modular exponentiation is applied, followed by the QFT on the first register. Measurement collapses to a multiple of N/r, enabling classical period-finding.",
+    results:{"Factor 3: 97%":0.97,"Factor 5: 97%":0.97,"Failure":0.03},
+    gates:[
+      {t:'H',q:0,c:0},{t:'H',q:1,c:0},
+      {t:'CMOD',q:0,c:1,tq:2},
+      {t:'QFT',q:0,c:2,tq:1},
+      {t:'M',q:0,c:3},{t:'M',q:1,c:3}
+    ]
+  },
+  qft:{
+    title:"Quantum Fourier Transform",badge:"TRANSFORM",
+    desc:"The QFT is the quantum analogue of the discrete Fourier transform, transforming an n-qubit state to its frequency-domain representation using O(n²) gates — exponentially fewer than the classical FFT's O(N log N). It is a core subroutine in Shor's, phase estimation, and many other algorithms.",
+    metrics:[{l:"Complexity",v:"O(n²)"},{l:"Speedup",v:"Exponential"},{l:"Qubits",v:"n"}],
+    cktDesc:"The QFT applies a Hadamard gate to each qubit followed by controlled phase rotations R_k = diag(1, e^(2πi/2^k)). The recursive butterfly structure ensures all frequency components are correctly computed. Final SWAP gates reorder qubits to match the standard DFT convention.",
+    results:{"Phase 0.0":0.02,"Phase 0.25":0.95,"Phase 0.5":0.02,"Phase 0.75":0.01},
+    gates:[
+      {t:'H',q:0,c:0},
+      {t:'CPHASE',q:0,c:1,tq:1},
+      {t:'H',q:1,c:2},
+      {t:'SWAP',q:0,c:3,tq:1},
+      {t:'M',q:0,c:4},{t:'M',q:1,c:4}
+    ]
+  },
+  vqe:{
+    title:"Variational Quantum Eigensolver",badge:"QUANTUM CHEMISTRY",
+    desc:"VQE is a hybrid quantum-classical algorithm for approximating the ground state energy of quantum systems, particularly molecules. A parameterized quantum circuit (ansatz) is optimized by a classical optimizer to minimize ⟨ψ(θ)|H|ψ(θ)⟩, finding the Hamiltonian's minimum eigenvalue.",
+    metrics:[{l:"Type",v:"Hybrid"},{l:"Application",v:"Chemistry"},{l:"Era",v:"NISQ"}],
+    cktDesc:"The hardware-efficient ansatz uses Ry and Rz rotation gates to prepare a trial state, with CNOT entanglers creating correlations between qubits. The classical outer loop (BFGS, COBYLA, or ADAM) adjusts rotation angles θ to lower the energy expectation value.",
+    results:{"E = −1.137 Ha":0.95,"E = −1.05 Ha":0.03,"E = −0.90 Ha":0.02},
+    gates:[
+      {t:'RY',q:0,c:0},{t:'RY',q:1,c:0},
+      {t:'CNOT',q:0,c:1,tq:1},
+      {t:'RZ',q:0,c:2},{t:'RZ',q:1,c:2},
+      {t:'M',q:0,c:3},{t:'M',q:1,c:3}
+    ]
+  },
+  qaoa:{
+    title:"Quantum Approximate Optimization",badge:"OPTIMIZATION",
+    desc:"QAOA alternates between cost Hamiltonian evolution (controlled by γ) and mixing operator evolution (controlled by β) over p layers to approximate solutions to combinatorial optimization problems like Max-Cut, graph coloring, and the traveling salesman problem on NISQ hardware.",
+    metrics:[{l:"Layers",v:"p ≥ 1"},{l:"Approx. Ratio",v:"≥ 0.692"},{l:"Type",v:"NISQ"}],
+    cktDesc:"All qubits are initialized in superposition via Hadamard gates. Each QAOA layer applies: (1) phase separating unitary U_C(γ) encoding the cost function, and (2) mixing unitary U_B(β) = ⊗ Rx(2β). With growing p, the circuit converges to the optimal solution.",
+    results:{"[1,0,1,1,0]":0.967,"[0,1,0,0,1]":0.021,"[1,1,0,0,1]":0.012},
+    gates:[
+      {t:'H',q:0,c:0},{t:'H',q:1,c:0},
+      {t:'CNOT',q:0,c:1,tq:1},
+      {t:'RZ',q:0,c:2},{t:'RZ',q:1,c:2},
+      {t:'RX',q:0,c:3},{t:'RX',q:1,c:3},
+      {t:'M',q:0,c:4},{t:'M',q:1,c:4}
+    ]
+  }
+};
+
+/* =====================================================
+   STATE
+===================================================== */
+let curAlgo='grover', curTab='overview', chatHist=[], rChart=null, cbState={gates:[],selGate:'H',nQ:4};
+
+/* =====================================================
+   PRELOADER
+===================================================== */
+const preMsgs=[
+  'Initializing quantum states…',
+  'Loading Hilbert space…',
+  'Preparing qubit registers…',
+  'Calibrating quantum gates…',
+  'Entangling subsystems…',
+  'Launching platform…'
+];
+let prI=0;
+const prInt=setInterval(()=>{
+  prI++;if(prI < preMsgs.length)document.getElementById('pre-text').textContent=preMsgs[prI];
+  if(prI >= preMsgs.length-1)clearInterval(prInt);
+},400);
+
+window.addEventListener('load',()=>{
+  setTimeout(()=>{
+    gsap.to('#preloader',{opacity:0,duration:.8,ease:'power2.inOut',onComplete:()=>{document.getElementById('preloader').style.display='none'}});
+    boot();
+  },2600);
+});
+
+/* =====================================================
+   BOOT
+===================================================== */
+function boot(){
+  gsap.registerPlugin(ScrollTrigger,TextPlugin);
+  initThree();
+  heroAnim();
+  initTicker();
+  initReveal();
+  navScroll();
+  initAlgo('grover');
+  initCxChart();
+  initCB();
+  updateKeyStatus();
+}
+
+/* =====================================================
+   THREE.JS — QUANTUM PARTICLE FIELD
+===================================================== */
+function initThree(){
+  const canvas=document.getElementById('three-canvas');
+  const W=window.innerWidth,H=window.innerHeight;
+  const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.setSize(W,H);
+
+  const scene=new THREE.Scene();
+  const cam=new THREE.PerspectiveCamera(60,W/H,.1,1e3);
+  cam.position.z=5;
+
+  const N=window.innerWidth < 768?600:1300;
+  const pos=new Float32Array(N*3),col=new Float32Array(N*3);
+  for(let i=0;i<N;i++){
+    pos[i*3]=(Math.random()-.5)*20;
+    pos[i*3+1]=(Math.random()-.5)*12;
+    pos[i*3+2]=(Math.random()-.5)*10;
+    const t=Math.random();
+    if(t < .5){col[i*3]=1;col[i*3+1]=.55;col[i*3+2]=0}      // orange
+    else if(t < .8){col[i*3]=1;col[i*3+1]=.37;col[i*3+2]=.12} // red-orange
+    else{col[i*3]=1;col[i*3+1]=.72;col[i*3+2]=.30}          // amber
+  }
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  geo.setAttribute('color',new THREE.BufferAttribute(col,3));
+  const mat=new THREE.PointsMaterial({size:.022,vertexColors:true,transparent:true,opacity:.5,blending:THREE.AdditiveBlending,depthWrite:false});
+  const pts=new THREE.Points(geo,mat);
+  scene.add(pts);
+
+  let mx=0,my=0;
+  document.addEventListener('mousemove',e=>{mx=(e.clientX/innerWidth-.5)*2;my=-(e.clientY/innerHeight-.5)*1.5});
+
+  const clk=new THREE.Clock();
+  function frame(){
+    requestAnimationFrame(frame);
+    const t=clk.getElapsedTime();
+    pts.rotation.y=t*.02;pts.rotation.x=t*.008;
+    cam.position.x+=(mx*.35-cam.position.x)*.035;
+    cam.position.y+=(my*.2-cam.position.y)*.035;
+    cam.lookAt(scene.position);
+    mat.opacity=.4+Math.sin(t*.6)*.08;
+    renderer.render(scene,cam);
+  }
+  frame();
+  window.addEventListener('resize',()=>{
+    cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();
+    renderer.setSize(innerWidth,innerHeight);
+  });
+}
+
+/* =====================================================
+   GSAP HERO ANIMATIONS
+===================================================== */
+function heroAnim(){
+  const tl=gsap.timeline({defaults:{ease:'power3.out'}});
+  tl.to('#he',{opacity:1,y:0,duration:.8,delay:.15})
+    .to('#hh',{opacity:1,y:0,duration:.9},'-.5')
+    .to('#hs',{opacity:1,y:0,duration:.8},'-.55')
+    .to('#ha',{opacity:1,y:0,duration:.7},'-.5')
+    .to('#hst',{opacity:1,y:0,duration:.7},'-.45')
+    .to('#hspline',{opacity:1,duration:1.5,ease:'power2.inOut'},'-=.8');
+}
+
+/* =====================================================
+   NAV SCROLL
+===================================================== */
+function navScroll(){
+  window.addEventListener('scroll',()=>{
+    document.getElementById('qnav').classList.toggle('scrolled',scrollY>60);
+  });
+}
+function toggleDrawer(){
+  document.getElementById('drawer').classList.toggle('open');
+  document.getElementById('ham').classList.toggle('open');
+}
+function closeDrawer(){
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('ham').classList.remove('open');
+}
+
+/* =====================================================
+   SCROLL REVEAL
+===================================================== */
+function initReveal(){
+  const obs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('vis')});
+  },{threshold:.1,rootMargin:'0px 0px -50px 0px'});
+  document.querySelectorAll('.rv').forEach(el=>obs.observe(el));
+}
+
+/* =====================================================
+   TICKER
+===================================================== */
+function initTicker(){
+  const items=[
+    {l:'Grover Speedup',v:'O(√N)'},
+    {l:'Shor Complexity',v:'O(n³)'},
+    {l:'QFT Gates',v:'O(n²)'},
+    {l:'Qubit Fidelity',v:'99.9%'},
+    {l:'Gate Error Rate',v:'0.001%'},
+    {l:'Coherence Time',v:'~1ms'},
+    {l:'Algorithms',v:'5 Simulated'},
+    {l:'AI Engine',v:'LLaMA-3.3-70B'},
+    {l:'Circuit Depth',v:'Configurable'},
+    {l:'Max Qubits',v:'127+'},
+  ];
+  const mk=arr=>arr.map(i=>`<div class="ticker-item"><span class="ti-label">${i.l}</span><span class="ti-value">${i.v}</span></div><div class="ti-sep"></div>`).join('');
+  const t=document.getElementById('ticker-track');
+  t.innerHTML=mk(items)+mk(items);
+}
+
+/* =====================================================
+   ALGORITHM PANEL
+===================================================== */
+function pickAlgo(a,el){
+  document.querySelectorAll('.algo-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  curAlgo=a;
+  initAlgo(a);
+}
+
+function initAlgo(a){
+  const d=ALGOS[a];
+  document.getElementById('xp-title').textContent=d.title;
+  document.getElementById('xp-badge').textContent=d.badge;
+  document.getElementById('adesc').textContent=d.desc;
+  document.getElementById('ametrics').innerHTML=d.metrics.map(m=>`
+    <div class="ametric"><div class="am-label">${m.l}</div><div class="am-val">${m.v}</div></div>`).join('');
+  document.getElementById('ckt-desc').textContent=d.cktDesc;
+  document.getElementById('rbar-wrap').innerHTML='';
+  if(rChart){rChart.destroy();rChart=null;}
+  switchTab('overview',document.querySelector('.xp-tab'));
+  setTimeout(()=>drawCkt(a),100);
+}
+
+function switchTab(tab,btn){
+  document.querySelectorAll('.xp-tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.tc').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById(`tc-${tab}`).classList.add('on');
+  curTab=tab;
+  if(tab==='circuit')drawCkt(curAlgo);
+}
+
+/* =====================================================
+   CIRCUIT SVG RENDERER
+===================================================== */
+const GATE_COLORS={
+  H:'#FF8C00',X:'#EF4444',Y:'#F59E0B',Z:'#FF5E1F',
+  CNOT:'#FFB84D',CMOD:'#F59E0B',QFT:'#EC4899',
+  CPHASE:'#FFB84D',SWAP:'#F97316',
+  RY:'#FF8C00',RZ:'#FF5E1F',RX:'#10B981',
+  ORACLE:'#FBBF24',M:'#94A3B8'
+};
+
+function drawCkt(a){
+  const d=ALGOS[a];
+  const svg=document.getElementById('ckt-svg');
+  if(!svg)return;
+  const NQ=3,CS=72,QS=54,SX=54,SY=28;
+  const maxC=Math.max(...d.gates.map(g=>g.c))+2;
+  const W=SX+maxC*CS+30,H=NQ*QS+SY*2;
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  svg.setAttribute('width',W);svg.setAttribute('height',H);
+  let h='';
+  for(let q=0;q<NQ;q++){
+    const y=SY+q*QS;
+    h+=`<text x="8" y="${y+5}" font-family="JetBrains Mono,monospace" font-size="11" fill="rgba(255,140,0,.75)">q${q}</text>`;
+    h+=`<line x1="${SX-6}" y1="${y}" x2="${W-12}" y2="${y}" stroke="rgba(255,140,0,.2)" stroke-width="1.5" stroke-dasharray="5,3"/>`;
+  }
+  d.gates.forEach(g=>{
+    if(g.q>=NQ)return;
+    const x=SX+g.c*CS+CS/2,y=SY+g.q*QS;
+    const cl=GATE_COLORS[g.t]||'#FF8C00';
+    if(g.t==='M'){
+      h+=`<rect x="${x-15}" y="${y-15}" width="30" height="30" rx="5" fill="${cl}14" stroke="${cl}66" stroke-width="1.5"/>`;
+      h+=`<text x="${x}" y="${y+5}" font-family="JetBrains Mono,monospace" font-size="10" fill="${cl}" text-anchor="middle">M</text>`;
+      h+=`<path d="M${x-8},${y+6} Q${x},${y-5} ${x+8},${y+6}" stroke="${cl}88" stroke-width="1.2" fill="none"/>`;
+      h+=`<line x1="${x}" y1="${y+6}" x2="${x+7}" y2="${y-4}" stroke="${cl}88" stroke-width="1.2"/>`;
+    } else if((g.t==='ORACLE'||g.t==='QFT'||g.t==='CMOD'||g.t==='SWAP')&&g.tq!==undefined&&g.tq<NQ){
+      const y2=SY+g.tq*QS,yMin=Math.min(y,y2),yMax=Math.max(y,y2);
+      h+=`<rect x="${x-20}" y="${yMin-15}" width="40" height="${yMax-yMin+30}" rx="6" fill="${cl}1A" stroke="${cl}" stroke-width="1.5" opacity=".9"/>`;
+      h+=`<text x="${x}" y="${(yMin+yMax)/2+5}" font-family="JetBrains Mono,monospace" font-size="9" font-weight="600" fill="${cl}" text-anchor="middle">${g.t}</text>`;
+    } else if(g.t==='CNOT'&&g.tq!==undefined&&g.tq<NQ){
+      const y2=SY+g.tq*QS;
+      h+=`<circle cx="${x}" cy="${y}" r="5" fill="${cl}"/>`;
+      h+=`<line x1="${x}" y1="${y}" x2="${x}" y2="${y2}" stroke="${cl}" stroke-width="1.5"/>`;
+      h+=`<circle cx="${x}" cy="${y2}" r="12" fill="transparent" stroke="${cl}" stroke-width="1.5"/>`;
+      h+=`<line x1="${x-12}" y1="${y2}" x2="${x+12}" y2="${y2}" stroke="${cl}" stroke-width="1"/>`;
+      h+=`<line x1="${x}" y1="${y2-12}" x2="${x}" y2="${y2+12}" stroke="${cl}" stroke-width="1"/>`;
+    } else if(g.t==='CPHASE'&&g.tq!==undefined){
+      const y2=SY+Math.min(g.tq,NQ-1)*QS;
+      h+=`<circle cx="${x}" cy="${y}" r="5" fill="${cl}"/>`;
+      h+=`<line x1="${x}" y1="${y}" x2="${x}" y2="${y2}" stroke="${cl}" stroke-width="1.2" stroke-dasharray="3,2"/>`;
+      h+=`<circle cx="${x}" cy="${y2}" r="5" fill="${cl}"/>`;
+    } else {
+      h+=`<rect x="${x-16}" y="${y-15}" width="32" height="30" rx="5" fill="${cl}18" stroke="${cl}" stroke-width="1.5"/>`;
+      h+=`<text x="${x}" y="${y+5}" font-family="JetBrains Mono,monospace" font-size="11" font-weight="700" fill="${cl}" text-anchor="middle">${g.t}</text>`;
+    }
+  });
+  svg.innerHTML=h;
+}
+
+/* =====================================================
+   SIMULATION
+===================================================== */
+function runSim(){
+  const btn=document.getElementById('sim-btn');
+  btn.classList.add('loading');btn.textContent='⏳ Running simulation…';
+  document.getElementById('rbar-wrap').innerHTML='';
+  if(rChart){rChart.destroy();rChart=null;}
+  setTimeout(()=>{
+    btn.classList.remove('loading');btn.textContent='▶ Run Quantum Simulation';
+    const res=ALGOS[curAlgo].results;
+    const wrap=document.getElementById('rbar-wrap');
+    wrap.innerHTML=Object.entries(res).map(([k,v])=>`
+      <div class="rbar">
+        <div class="rbar-lbl">${k}</div>
+        <div class="rbar-track"><div class="rbar-fill" data-w="${v*100}"></div></div>
+        <div class="rbar-pct">${(v*100).toFixed(1)}%</div>
+      </div>`).join('');
+    requestAnimationFrame(()=>{
+      document.querySelectorAll('.rbar-fill').forEach(b=>b.style.width=b.dataset.w+'%');
+    });
+    renderRChart(res);
+  },2000);
+}
+
+function renderRChart(res){
+  const ctx=document.getElementById('rchart').getContext('2d');
+  rChart=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:Object.keys(res),
+      datasets:[{
+        label:'Probability',
+        data:Object.values(res),
+        backgroundColor:Object.values(res).map((_,i)=>i===0?'rgba(255,140,0,.55)':'rgba(255,94,31,.4)'),
+        borderColor:Object.values(res).map((_,i)=>i===0?'#FF8C00':'#FF5E1F'),
+        borderWidth:1.5,borderRadius:6
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{color:'rgba(255,248,240,.6)',font:{family:'JetBrains Mono',size:10}},grid:{color:'rgba(255,255,255,.03)'}},
+        y:{min:0,max:1,ticks:{color:'rgba(255,248,240,.6)',font:{family:'JetBrains Mono',size:10}},grid:{color:'rgba(255,255,255,.03)'}}
+      }
+    }
+  });
+}
+
+/* =====================================================
+   COMPLEXITY CHART
+===================================================== */
+function initCxChart(){
+  const el=document.getElementById('cxchart');if(!el)return;
+  const n=Array.from({length:16},(_,i)=>i+1);
+  new Chart(el,{
+    type:'line',
+    data:{
+      labels:n.map(x=>`${x}`),
+      datasets:[
+        {label:'Classical O(N)',data:n,borderColor:'#EF4444',borderWidth:2,pointRadius:0,tension:.3,fill:false},
+        {label:"Grover O(√N)",data:n.map(x=>Math.sqrt(x)),borderColor:'#FF8C00',borderWidth:2,pointRadius:0,tension:.3,fill:false},
+        {label:'Classical Exp O(2^N)',data:n.map(x=>Math.min(Math.pow(2,x),20)),borderColor:'#FF5E1F',borderWidth:2,pointRadius:0,borderDash:[5,4],fill:false},
+        {label:'Shor O(N³) (scaled)',data:n.map(x=>Math.min(x*x*x/50,20)),borderColor:'#FFB84D',borderWidth:2,pointRadius:0,tension:.3,fill:false}
+      ]
+    },
+    options:{
+      responsive:true,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{labels:{color:'rgba(255,248,240,.65)',font:{family:'JetBrains Mono',size:9.5},boxWidth:10,padding:12}}},
+      scales:{
+        x:{ticks:{color:'rgba(255,248,240,.4)',font:{family:'JetBrains Mono',size:9},maxTicksLimit:8},grid:{color:'rgba(255,255,255,.025)'}},
+        y:{max:20,ticks:{color:'rgba(255,248,240,.4)',font:{family:'JetBrains Mono',size:9}},grid:{color:'rgba(255,255,255,.025)'}}
+      }
+    }
+  });
+}
+
+/* =====================================================
+   CIRCUIT BUILDER
+===================================================== */
+function initCB(){
+  const svg=document.getElementById('cb-svg');if(!svg)return;
+  renderCB();
+  svg.addEventListener('click',e=>{
+    const rect=svg.getBoundingClientRect();
+    const vb=svg.viewBox.baseVal;
+    const sx=vb.width/rect.width,sy=vb.height/rect.height;
+    const x=(e.clientX-rect.left)*sx,y=(e.clientY-rect.top)*sy;
+    const SX=60,QS=50,SY=30,CW=72;
+    const col=Math.round((x-SX-CW/2)/CW);
+    const q=Math.round((y-SY)/QS);
+    if(col>=0&&col < 9&&q>=0&&q < cbState.nQ){
+      cbState.gates.push({t:cbState.selGate,c:col,q});
+      renderCB();
+    }
+  });
+}
+
+function renderCB(){
+  const svg=document.getElementById('cb-svg');if(!svg)return;
+  const NQ=cbState.nQ,QS=50,SX=60,SY=30,CW=72,COLS=9;
+  const TW=SX+(COLS+1)*CW+20,TH=NQ*QS+SY*2;
+  svg.setAttribute('viewBox',`0 0 ${TW} ${TH}`);
+  svg.setAttribute('width','100%');svg.setAttribute('height',TH);
+  let h='';
+  for(let c=0;c<=COLS;c++){
+    h+=`<line x1="${SX+c*CW+CW/2}" y1="${SY-15}" x2="${SX+c*CW+CW/2}" y2="${NQ*QS+SY+15}" stroke="rgba(255,255,255,.025)" stroke-width="1"/>`;
+  }
+  for(let q=0;q<NQ;q++){
+    const y=SY+q*QS;
+    h+=`<rect x="4" y="${y-13}" width="46" height="26" rx="6" fill="rgba(255,140,0,.05)" stroke="rgba(255,140,0,.2)" stroke-width="1"/>`;
+    h+=`<text x="27" y="${y+5}" font-family="JetBrains Mono,monospace" font-size="11" fill="rgba(255,140,0,.8)" text-anchor="middle">q${q}</text>`;
+    h+=`<line x1="50" y1="${y}" x2="${TW-8}" y2="${y}" stroke="rgba(255,140,0,.22)" stroke-width="1.5" stroke-dasharray="5,3"/>`;
+  }
+  cbState.gates.forEach((g,idx)=>{
+    const x=SX+g.c*CW+CW/2,y=SY+g.q*QS;
+    const cl=GATE_COLORS[g.t]||'#FF8C00';
+    if(g.t==='M'){
+      h+=`<rect x="${x-15}" y="${y-14}" width="30" height="28" rx="5" fill="${cl}14" stroke="${cl}88" stroke-width="1.5"/>`;
+      h+=`<text x="${x}" y="${y+4}" font-family="JetBrains Mono,monospace" font-size="10" fill="${cl}" text-anchor="middle">M</text>`;
+    } else {
+      h+=`<rect x="${x-16}" y="${y-14}" width="32" height="28" rx="5" fill="${cl}18" stroke="${cl}" stroke-width="1.5"/>`;
+      h+=`<text x="${x}" y="${y+5}" font-family="JetBrains Mono,monospace" font-size="11" font-weight="700" fill="${cl}" text-anchor="middle">${g.t.length>2?g.t[0]+g.t[1]:g.t}</text>`;
+    }
+    h+=`<circle cx="${x+15}" cy="${y-14}" r="7.5" fill="rgba(239,68,68,.85)" style="cursor:pointer" onclick="rmGate(${idx})"/>`;
+    h+=`<text x="${x+15}" y="${y-10}" font-size="11" fill="white" text-anchor="middle" style="cursor:pointer;user-select:none" onclick="rmGate(${idx})">×</text>`;
+  });
+  svg.innerHTML=h;
+}
+
+function selGate(g,btn){
+  document.querySelectorAll('.gbtn').forEach(b=>{if(!b.classList.contains('gbtn-del')&&!b.classList.contains('gbtn-exp'))b.classList.remove('sel')});
+  btn.classList.add('sel');
+  cbState.selGate=g;
+}
+function clearCB(){cbState.gates=[];renderCB()}
+function rmGate(i){cbState.gates.splice(i,1);renderCB()}
+function exportCB(){
+  const lines=['// Quantum Circuit — Exported from Quantum Realm Explorer','// Format: GATE  qubit  column '];
+  cbState.gates.forEach(g=>lines.push(`${g.t.padEnd(6)}  q[${g.q}]  col=${g.c}`));
+  const blob=new Blob([lines.join('\n')],{type:'text/plain'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='circuit.qasm';a.click();
+}
+
+/* =====================================================
+   GROQ AI CHAT
+===================================================== */
+const SYS_PROMPT=`You are QuantumAI, an expert quantum computing assistant in the Quantum Realm Explorer platform.
+You have deep expertise in quantum algorithms (Grover's, Shor's, QFT, VQE, QAOA), quantum mechanics, circuit design, error correction, and quantum hardware.
+Be technically precise but approachable. Use notation like O(√N), |ψ⟩, ⟨ψ|H|ψ⟩ where relevant.
+Keep responses concise (3-4 paragraphs max). Use occasional emojis where natural (⚛, 🔬, ⚡, 🔐, 💡).`;
+
+async function sendChat(){
+  const inp=document.getElementById('chat-in');
+  const btn=document.getElementById('chat-send');
+  const msg=inp.value.trim();if(!msg)return;
+  
+  const key = getGroqKey();
+  if(!key){
+    appendMsg('ai', '🔐 <strong>API Key Required</strong><br><br>Please configure your Groq API key to use the AI assistant. Click the gear icon (⚙️) in the chat header or <a href="#" onclick="openKeyModal();return false;" style="color:var(--cyan)">click here</a> to add your key. Get one free at <a href="https://console.groq.com/keys" target="_blank" style="color:var(--cyan)">console.groq.com</a>.');
+    return;
+  }
+  
+  appendMsg('user',msg);
+  chatHist.push({role:'user',content:msg});
+  inp.value='';autoH(inp);btn.disabled=true;
+  const tid=showTyping();
+  try{
+    const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},
+      body:JSON.stringify({
+        model:GM,
+        messages:[{role:'system',content:SYS_PROMPT},...chatHist],
+        max_tokens:1024,temperature:.7
+      })
+    });
+    if(!res.ok){
+      const errData = await res.json().catch(()=>null);
+      const errMsg = errData?.error?.message || `HTTP ${res.status}`;
+      if(res.status === 401){
+        throw new Error(`Invalid API key (401). Please check your key at console.groq.com/keys and update it via the gear icon.`);
+      }
+      throw new Error(errMsg);
+    }
+    const data=await res.json();
+    const reply=data.choices[0].message.content;
+    rmTyping(tid);appendMsg('ai',reply);
+    chatHist.push({role:'assistant',content:reply});
+  } catch(e){
+    rmTyping(tid);
+    appendMsg('ai',`⚠️ <strong>Connection Error</strong><br><br>${e.message}<br><br><em style="opacity:.6">If this persists, verify your API key is active and has available credits.</em>`);
+  } finally{btn.disabled=false}
+}
+
+function appendMsg(role,text){
+  const c=document.getElementById('chat-msgs');
+  const d=document.createElement('div');
+  d.className=`msg ${role}`;
+  d.innerHTML=`<div class="msg-av">${role==='ai'?'⚛':'👤'}</div><div class="msg-bub">${fmtMsg(text)}</div>`;
+  c.appendChild(d);c.scrollTop=c.scrollHeight;
+}
+
+function fmtMsg(t) {
+  return t
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/`([^`]+)`/g, '<code style="background:rgba(255,140,0,.1);padding:1px 5px;border-radius:3px;font-family:JetBrains Mono,monospace;font-size:.85em">$1</code>')
+    .replace(/\n\n/g, '</p><p style="margin-top:.6rem">')
+    .replace(/\n/g, '<br>');
+}
+
+function showTyping(){
+  const id='t'+Date.now(),c=document.getElementById('chat-msgs');
+  const d=document.createElement('div');
+  d.className='msg ai';d.id=id;
+  d.innerHTML=`<div class="msg-av">⚛</div><div class="msg-bub"><div class="typing-wrap"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div></div>`;
+  c.appendChild(d);c.scrollTop=c.scrollHeight;return id;
+}
+function rmTyping(id){const el=document.getElementById(id);if(el)el.remove()}
+function chatKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat()}}
+function autoH(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px'}
+function useP(el){
+  const t=el.querySelector('.ct').textContent;
+  const i=document.getElementById('chat-in');
+  i.value=t;i.focus();autoH(i);
+  document.getElementById('ai-lab').scrollIntoView({behavior:'smooth'});
+}
+</script>
 </body>
 </html>
